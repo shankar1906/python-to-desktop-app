@@ -1,0 +1,92 @@
+{% load static %}
+<div class="table-responsive flex-grow-1" style="overflow-y: auto; min-height: 0; height: 0;">
+    <table class="table mb-0 custom-table table-borderless table-striped small">
+        <thead class="table-light">
+            <tr>
+                <th style="width: 25%;">ITEM</th>
+                {% for label in item_header_labels %}
+                <th>{{ label|upper }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in item_rows_structure %}
+            <tr>
+                <td class="fw-bold">{{ row.label|upper }}</td>
+                {% for cell in row.columns %}
+                <td>
+                    {% with field=cell.field %}
+                    {% if field.data_type == 'DROP DOWN' %}
+                    {% if field.is_mandatory %}
+                    <select id="{{ field.field_name|slugify }}_{{ row.label|slugify }}_{{ station_suffix }}"
+                        name="{{ row.label }} - {{ cell.row_label }}"
+                        class="form-select form-select-sm item-detail-field" required>
+                        {% else %}
+                        <select id="{{ field.field_name|slugify }}_{{ row.label|slugify }}_{{ station_suffix }}"
+                            name="{{ row.label }} - {{ cell.row_label }}"
+                            class="form-select form-select-sm item-detail-field">
+                            {% endif %}
+                            <option value="">Select</option>
+                            {% for opt in field.dropdown_options %}
+                            <option value="{{ opt }}">{{ opt }}</option>
+                            {% endfor %}
+                        </select>
+                        {% elif field.data_type == 'INT' %}
+                        {% if field.is_mandatory %}
+                        <input type="number"
+                            id="{{ field.field_name|slugify }}_{{ row.label|slugify }}_{{ station_suffix }}"
+                            name="{{ row.label }} - {{ cell.row_label }}"
+                            class="form-control form-control-sm item-detail-field" placeholder="-" required>
+                        {% else %}
+                        <input type="number"
+                            id="{{ field.field_name|slugify }}_{{ row.label|slugify }}_{{ station_suffix }}"
+                            name="{{ row.label }} - {{ cell.row_label }}"
+                            class="form-control form-control-sm item-detail-field" placeholder="-">
+                        {% endif %}
+                        {% elif field.data_type == 'DATE' %}
+                        {% if field.is_mandatory %}
+                        <input type="date"
+                            id="{{ field.field_name|slugify }}_{{ row.label|slugify }}_{{ station_suffix }}"
+                            name="{{ row.label }} - {{ cell.row_label }}"
+                            class="form-control form-control-sm item-detail-field" required>
+                        {% else %}
+                        <input type="date"
+                            id="{{ field.field_name|slugify }}_{{ row.label|slugify }}_{{ station_suffix }}"
+                            name="{{ row.label }} - {{ cell.row_label }}"
+                            class="form-control form-control-sm item-detail-field">
+                        {% endif %}
+                        {% elif field.data_type == 'BOOLEAN' %}
+                        {% if field.is_mandatory %}
+                        <select id="{{ field.field_name|slugify }}_{{ row.label|slugify }}_{{ station_suffix }}"
+                            name="{{ row.label }} - {{ cell.row_label }}"
+                            class="form-select form-select-sm item-detail-field" required>
+                            {% else %}
+                            <select id="{{ field.field_name|slugify }}_{{ row.label|slugify }}_{{ station_suffix }}"
+                                name="{{ row.label }} - {{ cell.row_label }}"
+                                class="form-select form-select-sm item-detail-field">
+                                {% endif %}
+                                <option value="">Select</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                            {% else %}
+                            {% if field.is_mandatory %}
+                            <input type="text"
+                                id="{{ field.field_name|slugify }}_{{ row.label|slugify }}_{{ station_suffix }}"
+                                name="{{ row.label }} - {{ cell.row_label }}"
+                                class="form-control form-control-sm item-detail-field" placeholder="-" required>
+                            {% else %}
+                            <input type="text"
+                                id="{{ field.field_name|slugify }}_{{ row.label|slugify }}_{{ station_suffix }}"
+                                name="{{ row.label }} - {{ cell.row_label }}"
+                                class="form-control form-control-sm item-detail-field" placeholder="-">
+                            {% endif %}
+                            {% endif %}
+                            {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

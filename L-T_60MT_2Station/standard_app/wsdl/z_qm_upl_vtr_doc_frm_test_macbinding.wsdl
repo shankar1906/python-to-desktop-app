@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsoap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:n1="urn:sap-com:document:sap:rfc:functions">
+  <wsdl:types>
+    <xsd:schema attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:rfc:functions">
+      <xsd:simpleType name="char12">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="12"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char18">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="18"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char225">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="225"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="numeric1">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="1"/>
+          <xsd:pattern value="\d*"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:schema>
+    <xsd:schema attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:n0="urn:sap-com:document:sap:rfc:functions">
+      <xsd:import namespace="urn:sap-com:document:sap:rfc:functions"/>
+      <xsd:element name="ZQmUplVtrDocFrmTestMac">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="IpFilePath" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="IpLoginUser" type="n0:char12" minOccurs="0"/>
+            <xsd:element name="IpUsn" type="n0:char18" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ZQmUplVtrDocFrmTestMacResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="EpExcmsg" type="n0:char225"/>
+            <xsd:element name="EpSuccess" type="n0:numeric1"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="ZQmUplVtrDocFrmTestMac">
+    <wsdl:part name="parameters" element="tns:ZQmUplVtrDocFrmTestMac"/>
+  </wsdl:message>
+  <wsdl:message name="ZQmUplVtrDocFrmTestMacResponse">
+    <wsdl:part name="parameters" element="tns:ZQmUplVtrDocFrmTestMacResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="Z_QM_UPL_VTR_DOC_FRM_TEST_MAC">
+    <wsdl:documentation>
+      <sapdoc:sapdoc xmlns:sapdoc="urn:sap:esi:documentation">
+        <sapdoc:docitem applicationComponent="CA"/>
+      </sapdoc:sapdoc>
+    </wsdl:documentation>
+    <wsdl:operation name="ZQmUplVtrDocFrmTestMac">
+      <wsdl:input message="tns:ZQmUplVtrDocFrmTestMac"/>
+      <wsdl:output message="tns:ZQmUplVtrDocFrmTestMacResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="Z_QM_UPL_VTR_DOC_FRM_TEST_MACbinding" type="tns:Z_QM_UPL_VTR_DOC_FRM_TEST_MAC">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <wsdl:operation name="ZQmUplVtrDocFrmTestMac">
+      <soap:operation soapAction="urn:sap-com:document:sap:soap:functions:mc-style:Z_QM_UPL_VTR_DOC_FRM_TEST_MAC:ZQmUplVtrDocFrmTestMacRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Z_QM_UPL_VTR_DOC_FRM_TEST_MACservice">
+    <wsdl:port name="Z_QM_UPL_VTR_DOC_FRM_TEST_MACbinding" binding="tns:Z_QM_UPL_VTR_DOC_FRM_TEST_MACbinding">
+      <soap:address location="http://sap.lntvalves.com:8000/sap/bc/srt/rfc/sap/z_qm_upl_vtr_doc_frm_test_mac/999/z_qm_upl_vtr_doc_frm_test_macser/z_qm_upl_vtr_doc_frm_test_macbinding"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

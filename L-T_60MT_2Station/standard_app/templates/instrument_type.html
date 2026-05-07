@@ -1,0 +1,88 @@
+{% extends 'base_new.html' %}
+{% load static %}
+
+{% block header_title %}Instrument Type{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'standard_app/css/instrument_type.css' %}">
+
+<div class="container-fluid table-container-wrapper">
+  <div class="card">
+
+    <!-- Hint Bar -->
+    <div class="edit-hint" id="editHint">
+      <div>💡 Tip: Modify values directly • Click headers to sort</div>
+      <button class="close-btn" onclick="document.getElementById('editHint').style.display='none'">&times;</button>
+    </div>
+
+    <!-- Filter Row -->
+    <div class="custom-filter-row">
+      <div class="search-toggle-container">
+        <div class="search-input-wrapper" id="searchInputWrapper">
+          <button class="search-icon-btn" id="searchToggleBtn" title="Search">
+            <i class="fas fa-search"></i>
+          </button>
+          <input type="text" id="customSearchInput" placeholder="Search instruments...">
+          <button class="search-close-btn" id="searchCloseBtn" title="Clear Search">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN FORM WRAPPER -->
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+      <form id="instrumentForm" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+        {% csrf_token %}
+
+        <!-- Table Area -->
+        <div class="table-responsive">
+          <table class="table no-datatables" id="instrumentTable">
+            <thead>
+              <tr>
+                <th class="text-end pe-3" style="width: 60px;">S NO</th>
+                <th class="sortable text-start" data-column="instrument_serial_no">SERIAL NO <i class="fas fa-sort"></i>
+                </th>
+                <th class="sortable text-start" data-column="instrument_name">INSTRUMENT NAME <i
+                    class="fas fa-sort"></i></th>
+                <th class="sortable text-start" data-column="instrument_done_date">DONE DATE <i class="fas fa-sort"></i>
+                </th>
+                <th class="sortable text-start" data-column="instrument_due_date">DUE DATE <i class="fas fa-sort"></i>
+                </th>
+                <th class="sortable text-start" data-column="status">STATUS <i class="fas fa-sort"></i></th>
+                <th style="width: 50px;">
+                  <button type="button" class="btn-add-row" onclick="addRow()" title="Add Row">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="instrument_tbody">
+              <tr>
+                <td colspan="7" class="text-center py-4">Loading Data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </form>
+    </div>
+
+    <!-- Footer: Pagination + Buttons -->
+    <div class="footer-layout">
+      <div></div> <!-- Left Spacer -->
+      <div class="pagination-wrapper" id="customPagination">
+        <!-- Pagination rendered here -->
+      </div>
+      <div class="action-buttons">
+        <button type="button" class="btn btn-success px-4 text-white" onclick="submitForm()">SAVE</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'standard_app/js/instrument_type.js' %}"></script>
+{% endblock %}

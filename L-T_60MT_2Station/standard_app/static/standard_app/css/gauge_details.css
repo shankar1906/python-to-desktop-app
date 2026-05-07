@@ -1,0 +1,210 @@
+/* ===== Container & Scroll ===== */
+.table-container-wrapper {
+    height: calc(100vh - 135px);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+}
+
+.card {
+    border: none;
+    border-radius: 0;
+    background: white;
+    box-shadow: none;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+.card-body {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    background: white;
+    min-height: 0;
+}
+
+/* ===== Hint Bar ===== */
+.edit-hint {
+    padding: 0.5rem 1rem;
+    background: #e7f3ff;
+    color: #0066cc;
+    font-size: 0.8125rem;
+    border-bottom: 1px solid #b3d9ff;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.edit-hint .close-btn {
+    background: transparent;
+    border: none;
+    color: #0066cc;
+    font-size: 1.125rem;
+    cursor: pointer;
+    margin-left: auto;
+    line-height: 1;
+}
+
+/* ===== Table Styling ===== */
+.table-responsive {
+    flex: 1;
+    overflow: auto;
+    background: white;
+    min-height: 0;
+    max-height: calc(100vh - 240px);
+}
+
+/* Scrollbar Styling */
+.table-responsive::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #E21A34;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #c9162e;
+}
+
+.table {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    background: #e9ecef;
+    color: black;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 1rem 0.75rem;
+    border-bottom: 2px solid #edf2f7;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    text-align: center;
+}
+
+.table tbody td {
+    padding: 0.5rem;
+    vertical-align: middle;
+    border: 1px solid #e5e7eb;
+    border-top: none;
+}
+
+.table tbody tr:first-child td {
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Inputs in table */
+.table .form-control,
+.table .form-select {
+    font-size: 0.875rem;
+    padding: 0.4rem 0.5rem;
+    border-color: #e2e8f0;
+}
+
+.table .form-control:focus,
+.table .form-select:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 0 1px rgba(49, 130, 206, 0.2);
+}
+
+.table .form-control::placeholder {
+    color: #cbd5e0;
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.btn-icon {
+    border: none;
+    background: transparent;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.btn-icon.delete {
+    color: #dc3545;
+}
+
+.btn-icon.delete:hover {
+    background: #ffe5e5;
+}
+
+.btn-add-row {
+    background: #48bb78;
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn-add-row:hover {
+    background: #38a169;
+}
+
+.btn-add-row:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+}
+
+/* Footer Controls */
+.footer-controls {
+    padding: 0.75rem 1rem;
+    background: white;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+}
+
+.invalid-feedback {
+    font-size: 0.75rem;
+}
+
+/* Overdue Row Styling */
+.table tbody tr.overdue-row {
+    background-color: #ffebee !important;
+}
+
+.table tbody tr.overdue-row td {
+    background-color: #ffebee !important;
+    border-color: #ffcdd2 !important;
+}
+
+.table tbody tr.overdue-row .form-control,
+.table tbody tr.overdue-row .form-select {
+    background-color: #ffebee !important;
+}

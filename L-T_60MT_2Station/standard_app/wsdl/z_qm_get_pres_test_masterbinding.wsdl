@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsoap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:n1="urn:sap-com:document:sap:rfc:functions">
+   <wsdl:types>
+    <xsd:schema attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:rfc:functions">
+      <xsd:simpleType name="char1">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="1"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char10">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="10"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char12">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="12"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char15">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="15"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char16">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="16"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char18">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="18"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char2">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="2"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char225">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="225"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char3">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="3"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char30">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="30"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char35">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="35"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char4">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="4"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char50">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="50"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char60">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="60"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="numeric1">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="1"/>
+          <xsd:pattern value="\d*"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="numeric6">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="6"/>
+          <xsd:pattern value="\d*"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="quantum5.0">
+        <xsd:restriction base="xsd:decimal">
+          <xsd:totalDigits value="5"/>
+          <xsd:fractionDigits value="0"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="quantum7.1">
+        <xsd:restriction base="xsd:decimal">
+          <xsd:totalDigits value="7"/>
+          <xsd:fractionDigits value="1"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="unit3">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="3"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:schema>
+    <xsd:schema attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:n0="urn:sap-com:document:sap:rfc:functions">
+      <xsd:import namespace="urn:sap-com:document:sap:rfc:functions"/>
+      <xsd:complexType name="ZmmtsTraceDetail">
+        <xsd:sequence>
+          <xsd:element name="ZtrMatnr" type="n0:char18"/>
+          <xsd:element name="ZtrDesc" type="n0:char18"/>
+          <xsd:element name="Lifnr" type="n0:char10"/>
+          <xsd:element name="ZheatNo" type="n0:char15"/>
+          <xsd:element name="ZmpiNo" type="n0:char15"/>
+          <xsd:element name="ZxrayNo" type="n0:char15"/>
+          <xsd:element name="ZdpiNo" type="n0:char15"/>
+          <xsd:element name="ZactSrlNo" type="n0:char15"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ZmmtsValPreTesDur">
+        <xsd:sequence>
+          <xsd:element name="ZprodClasType" type="n0:char3"/>
+          <xsd:element name="ZprodSize" type="n0:char2"/>
+          <xsd:element name="ZprTestType" type="xsd:unsignedByte"/>
+          <xsd:element name="ZprTestTypTxt" type="n0:char60"/>
+          <xsd:element name="ZtestDurUnit" type="n0:unit3"/>
+          <xsd:element name="ZtestDuration" type="n0:quantum5.0"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ZmmtsValPreTesDurVal">
+        <xsd:sequence>
+          <xsd:element name="ZprTestType" type="xsd:unsignedByte"/>
+          <xsd:element name="ZprTestTypTxt" type="n0:char60"/>
+          <xsd:element name="ZtestDurUnit" type="n0:unit3"/>
+          <xsd:element name="ZtestDuration" type="n0:quantum5.0"/>
+          <xsd:element name="ZtestPrUmBar" type="n0:unit3"/>
+          <xsd:element name="ZtestPrValBar" type="n0:quantum7.1"/>
+          <xsd:element name="ZtestPrUmPsi" type="n0:unit3"/>
+          <xsd:element name="ZtestPrValPsi" type="n0:quantum7.1"/>
+          <xsd:element name="ZtestPrUmKcm" type="n0:unit3"/>
+          <xsd:element name="ZtestPrValKcm" type="n0:quantum7.1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ZmmtsValPreTesVal">
+        <xsd:sequence>
+          <xsd:element name="ZprodClasType" type="n0:char3"/>
+          <xsd:element name="ZprodClasRat" type="n0:char2"/>
+          <xsd:element name="ZprodMaterial" type="n0:char2"/>
+          <xsd:element name="ZprTestType" type="xsd:unsignedByte"/>
+          <xsd:element name="ZprTestTypTxt" type="n0:char60"/>
+          <xsd:element name="ZtestPrUnit" type="n0:unit3"/>
+          <xsd:element name="ZtestPressure" type="n0:quantum7.1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ZmmtsValAttrDet">
+        <xsd:sequence>
+          <xsd:element name="NameChar" type="n0:char30"/>
+          <xsd:element name="CharValue" type="n0:char30"/>
+          <xsd:element name="DescrCval" type="n0:char30"/>
+          <xsd:element name="ShortDesc" type="n0:char30"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ZmmtsValDet">
+        <xsd:sequence>
+          <xsd:element name="Matnr" type="n0:char18"/>
+          <xsd:element name="ZprodClas" type="n0:char1"/>
+          <xsd:element name="ZprodDesc" type="n0:char50"/>
+          <xsd:element name="ZprodClasType" type="n0:char30"/>
+          <xsd:element name="ZprodClasTypeDesc" type="n0:char30"/>
+          <xsd:element name="ZprodSize" type="n0:char30"/>
+          <xsd:element name="ZprodSizeDesc" type="n0:char30"/>
+          <xsd:element name="ZprodClasRat" type="n0:char30"/>
+          <xsd:element name="ZprodClasRatDesc" type="n0:char30"/>
+          <xsd:element name="ZprodCatg" type="n0:char30"/>
+          <xsd:element name="ZprodCatgDesc" type="n0:char30"/>
+          <xsd:element name="ZprodMaterial" type="n0:char30"/>
+          <xsd:element name="ZprodMaterialDesc" type="n0:char30"/>
+          <xsd:element name="ZprodMatShortDesc" type="n0:char30"/>
+          <xsd:element name="ZfgSlno" type="n0:char18"/>
+          <xsd:element name="Kdauf" type="n0:char10"/>
+          <xsd:element name="Kdpos" type="n0:numeric6"/>
+          <xsd:element name="Aufnr" type="n0:char12"/>
+          <xsd:element name="Spart" type="n0:char2"/>
+          <xsd:element name="Werks" type="n0:char4"/>
+          <xsd:element name="Tagnum" type="n0:char35"/>
+          <xsd:element name="Gadnum" type="n0:char50"/>
+          <xsd:element name="Dokvr" type="n0:char2"/>
+          <xsd:element name="Dostx" type="n0:char16"/>
+          <xsd:element name="ActModel" type="n0:char30"/>
+          <xsd:element name="ActModelBp" type="n0:char30"/>
+          <xsd:element name="ActRpm" type="n0:char30"/>
+          <xsd:element name="ActRpmBp" type="n0:char30"/>
+          <xsd:element name="ActWiringDiagram" type="n0:char30"/>
+          <xsd:element name="ActWiringDiagramBp" type="n0:char30"/>
+          <xsd:element name="ActOpTimeMin" type="n0:char30"/>
+          <xsd:element name="ActOpTimeMax" type="n0:char30"/>
+          <xsd:element name="ActOpTimeMinBp" type="n0:char30"/>
+          <xsd:element name="ActOpTimeMaxBp" type="n0:char30"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="TableOfZmmtsTraceDetail">
+        <xsd:sequence>
+          <xsd:element name="item" type="tns:ZmmtsTraceDetail" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="TableOfZmmtsValPreTesDur">
+        <xsd:sequence>
+          <xsd:element name="item" type="tns:ZmmtsValPreTesDur" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="TableOfZmmtsValPreTesDurVal">
+        <xsd:sequence>
+          <xsd:element name="item" type="tns:ZmmtsValPreTesDurVal" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="TableOfZmmtsValPreTesVal">
+        <xsd:sequence>
+          <xsd:element name="item" type="tns:ZmmtsValPreTesVal" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="TableOfZmmtsValAttrDet">
+        <xsd:sequence>
+          <xsd:element name="item" type="tns:ZmmtsValAttrDet" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="ZQmGetPresTestMaster">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="EtPreTestDurVal" type="tns:TableOfZmmtsValPreTesDurVal" minOccurs="0"/>
+            <xsd:element name="EtPreTestDuratM" type="tns:TableOfZmmtsValPreTesDur" minOccurs="0"/>
+            <xsd:element name="EtPreTestValueM" type="tns:TableOfZmmtsValPreTesVal" minOccurs="0"/>
+            <xsd:element name="EtScndet" type="tns:TableOfZmmtsTraceDetail" minOccurs="0"/>
+            <xsd:element name="EtValveAttrMast" type="tns:TableOfZmmtsValAttrDet" minOccurs="0"/>
+            <xsd:element name="IpLoginUser" type="n0:char12" minOccurs="0"/>
+            <xsd:element name="IpMasterDataAll" type="n0:char1" minOccurs="0"/>
+            <xsd:element name="IpMbarcodeNum" type="n0:char12" minOccurs="0"/>
+            <xsd:element name="IpProductCode" type="n0:char1" minOccurs="0"/>
+            <xsd:element name="IpUsn" type="n0:char18" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ZQmGetPresTestMasterResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="EpExcmsg" type="n0:char225"/>
+            <xsd:element name="EpSuccess" type="n0:numeric1"/>
+            <xsd:element name="EsValveDetail" type="tns:ZmmtsValDet"/>
+            <xsd:element name="EtPreTestDurVal" type="tns:TableOfZmmtsValPreTesDurVal" minOccurs="0"/>
+            <xsd:element name="EtPreTestDuratM" type="tns:TableOfZmmtsValPreTesDur" minOccurs="0"/>
+            <xsd:element name="EtPreTestValueM" type="tns:TableOfZmmtsValPreTesVal" minOccurs="0"/>
+            <xsd:element name="EtScndet" type="tns:TableOfZmmtsTraceDetail" minOccurs="0"/>
+            <xsd:element name="EtValveAttrMast" type="tns:TableOfZmmtsValAttrDet" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="ZQmGetPresTestMaster">
+    <wsdl:part name="parameters" element="tns:ZQmGetPresTestMaster"/>
+  </wsdl:message>
+  <wsdl:message name="ZQmGetPresTestMasterResponse">
+    <wsdl:part name="parameters" element="tns:ZQmGetPresTestMasterResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="Z_QM_GET_PRES_TEST_MASTER">
+    <wsdl:documentation>
+      <sapdoc:sapdoc xmlns:sapdoc="urn:sap:esi:documentation">
+        <sapdoc:docitem applicationComponent="CA"/>
+      </sapdoc:sapdoc>
+    </wsdl:documentation>
+    <wsdl:operation name="ZQmGetPresTestMaster">
+      <wsdl:input message="tns:ZQmGetPresTestMaster"/>
+      <wsdl:output message="tns:ZQmGetPresTestMasterResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="Z_QM_GET_PRES_TEST_MASTERbinding" type="tns:Z_QM_GET_PRES_TEST_MASTER">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <wsdl:operation name="ZQmGetPresTestMaster">
+      <soap:operation soapAction="urn:sap-com:document:sap:soap:functions:mc-style:Z_QM_GET_PRES_TEST_MASTER:ZQmGetPresTestMasterRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Z_QM_GET_PRES_TEST_MASTERservice">
+    <wsdl:port name="Z_QM_GET_PRES_TEST_MASTERbinding" binding="tns:Z_QM_GET_PRES_TEST_MASTERbinding">
+      <soap:address location="http://sap.lntvalves.com:8000/sap/bc/srt/rfc/sap/z_qm_get_pres_test_master/999/z_qm_get_pres_test_masterservice/z_qm_get_pres_test_masterbinding"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

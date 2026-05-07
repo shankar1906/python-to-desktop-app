@@ -1,0 +1,53 @@
+{% extends 'base_new.html' %}
+{% load static %}
+{% block header_title %}Test Type{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'standard_app/css/test_type.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid table-container-wrapper">
+    <div class="card">
+        <div class="edit-hint" id="editHint">
+            <div>💡 Tip: Modify values directly • Click headers to sort</div>
+            <button class="close-btn"
+                onclick="document.getElementById('editHint').style.display='none'">&times;</button>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+            <form id="testTypeForm" style="display: flex; flex-direction: column; height: 100%;">
+                {% csrf_token %}
+                <div class="table-responsive">
+                    <table class="table no-datatables" id="testTypeTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable text-end pe-3" data-column="0" style="width: 60px;">TEST TYPE ID <i
+                                        class="fas fa-sort"></i></th>
+                                <th class="sortable text-start" data-column="1">TEST NAME <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable text-start" data-column="2">CATEGORY <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable text-start" data-column="3">STATUS <i class="fas fa-sort"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="testTypeTableBody">
+                            <tr>
+                                <td colspan="4" class="text-center py-4">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+        <div
+            style="background: white; padding: 0.75rem 1.5rem; border-top: 1px solid #dee2e6; display: flex; justify-content: flex-end;">
+            <button type="button" class="btn btn-success px-4" onclick="submitForm()">SAVE</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'scripts/form-validator.js' %}"></script>
+<script src="{% static 'standard_app/js/test_type.js' %}"></script>
+{% endblock %}

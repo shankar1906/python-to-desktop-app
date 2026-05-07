@@ -1,0 +1,67 @@
+{% extends 'base_new.html' %}
+{% block header_title %}Gauge Details{% endblock %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'standard_app/css/gauge_details.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid table-container-wrapper" data-superuser-level="{{ superuser_level }}">
+    <div class="card">
+        <!-- Hint -->
+        <div class="edit-hint" id="editHint">
+            <div>💡 Tip: Modify values directly in the table cells • Click '+' to add new rows • Click Trash to remove
+            </div>
+            <button class="close-btn"
+                onclick="document.getElementById('editHint').style.display='none'">&times;</button>
+        </div>
+        <!-- MAIN FORM -->
+        <form id="gaugeForm" style="display: flex; flex-direction: column; height: 100%;">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table" id="gaugeTable">
+                    <thead>
+                        <tr>
+                            <th class="text-start">
+                                {% if superuser_level == 2 %}
+                                GAUGE ID
+                                {% else %}
+                                S.No
+                                {% endif %}</th>
+                            <th class="text-end pe-3" style="width: 150px;">GAUGE SERIAL NUMBER</th>
+                            <th class="text-start">MEDIUM</th>
+                            <th class="text-start">RANGE (PSI)</th>
+                            <th class="text-start">RANGE (BAR)</th>
+                            <th class="text-start">RANGE (KGCM2G)</th>
+                            <th class="text-start">CAL DONE DATE</th>
+                            <th class="text-start">CAL DUE DATE</th>
+                            <th class="text-start">STATION ID</th>
+                            <th class="text-start">GAUGE STATUS</th>
+                            <th style="width: 50px;">
+                                <button type="button" class="btn-add-row" id="addRowBtn" onclick="addRow()"
+                                    title="Add Row">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="gaugeTableBody">
+                        <tr>
+                            <td colspan="11" class="text-center py-4">Loading gauges...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="footer-controls">
+                <button type="submit" class="btn btn-success px-4">SAVE</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'scripts/form-validator.js' %}"></script>
+<script src="{% static 'standard_app/js/gauge_details.js' %}"></script>
+{% endblock %}

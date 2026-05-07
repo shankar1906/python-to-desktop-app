@@ -1,0 +1,147 @@
+{% extends 'base_new.html' %}
+{% block header_title %}Valve Type{% endblock %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'standard_app/css/valve_type.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid table-container-wrapper" data-superuser-level="{{ superuser_level }}">
+    <div class="card">
+        <div class="card-body">
+            <!-- Edit Hint -->
+            <div class="edit-hint" id="editHint">
+                <div class="hint-text">
+                    💡 Tip: Click on any row to edit • Select checkbox(es) and click Delete to remove
+                </div>
+                <button class="close-btn" onclick="dismissHint()" title="Dismiss">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- CONTROL ROW -->
+            <div class="custom-filter-row">
+                <div class="left-controls">
+                    {% if superuser_level == 2 %}
+                    <div class="table-action-buttons" id="tableActionButtons">
+                        <button class="bulk-delete-btn" id="bulkDeleteBtn" disabled onclick="handleBulkDelete()">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="search-toggle-container">
+                    <div class="search-input-wrapper" id="searchInputWrapper">
+                        <button class="search-icon-btn" id="searchToggleBtn" title="Toggle Search">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <input type="text" id="customSearchInput" placeholder="Search valve types..."
+                            onkeyup="triggerFilter()">
+                        <button class="search-close-btn" id="searchCloseBtn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-action-buttons" id="tableActionButtons-add">
+                    {% if superuser_level == 2 %}
+                    <button class="master-add-btn" onclick="openValveModal('add')">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="valveTypeTable">
+                    <thead>
+                        <tr>
+                            {% if superuser_level == 2 %}
+                            <th style="width: 40px;">
+                                <input type="checkbox" id="selectAll" onclick="toggleSelectAll()">
+                            </th>
+                            {% endif %}
+                            <th class="text-end pe-3" style="width: 60px;">
+                                {% if superuser_level == 2 %}
+                                VALVE TYPE ID
+                                {% else %}
+                                S.No
+                                {% endif %}
+                            </th>
+                            <th class="text-start">Type Name</th>
+                            <th class="text-start">Type Description</th>
+                            <th class="text-start">ASSOCIATED TEST TYPES</th>
+                            <th class="text-start">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="valveTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION -->
+            <div class="custom-pagination-container" id="customPagination"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal fade" id="valveModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="valveModalTitle">Add Valve Type</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="valveForm" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="valve_id" id="valveId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Valve Type Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="name" id="valveName" placeholder="e.g. Ball Valve"
+                            required>
+                        <div class="invalid-feedback" id="nameError"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" id="valveDesc" rows="2"
+                            placeholder="Optional description"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Select Test Types <span class="text-danger">*</span></label>
+                        <div class="border rounded p-3"
+                            style="max-height: 200px; overflow-y: auto; background: #f8fafc;">
+                            <div class="row" id="testTypeCheckboxes"></div>
+                        </div>
+                        <div class="text-danger small mt-1" id="testTypeError"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select id="status" name="status" class="form-select" required>
+                            <option value="">Select Status</option>
+                            <option value="Enabled">Enabled</option>
+                            <option value="Disabled">Disabled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="submitBtn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'scripts/form-validator.js' %}"></script>
+<script src="{% static 'standard_app/js/valve_type.js' %}"></script>
+{% endblock %}

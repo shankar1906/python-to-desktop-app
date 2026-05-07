@@ -1,0 +1,490 @@
+/* =========================================================
+   demo.css  –  Industrial Pressure Monitoring Dashboard
+   Teslead Equipment Pvt Ltd  |  Reference: L&T Dashboard Screenshot
+   ========================================================= */
+
+:root {
+    --bg-dark-main: #181818;
+    --bg-header: #000000;
+    --bg-info-bar: #e5e5e5;
+    --bg-values-bar: #252525;
+    --bg-panel: #181818;
+    --bg-card: #474441;
+
+    --text-primary: #e0e6f0;
+    --text-dim: #90a0b0;
+    --accent-green: #4caf50;
+    --accent-yellow: #ffc107;
+    --accent-blue: #2196f3;
+}
+
+.demo-page-body {
+    background: var(--bg-dark-main);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+}
+
+/* ══════════════════════════════════════════════
+   HEADER BAR (Home | Buttons | Cycle)
+══════════════════════════════════════════════ */
+.demo-top-header {
+    background: var(--bg-header);
+    height: 38px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 10px;
+    border-bottom: 2px solid #555;
+}
+
+.home-link {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+}
+
+.header-btn-row {
+    display: flex;
+    gap: 5px;
+    flex-direction: row;
+    justify-content: end;
+    flex: 1;
+    overflow-x: auto;
+    /* hide scrollbar for cleaner look if supported */
+    scrollbar-width: none;
+}
+
+.header-btn-row::-webkit-scrollbar {
+    display: none;
+}
+
+.h-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.h-btn:hover {
+    background: var(--accent-blue);
+    color: #fff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.h-btn.active {
+    box-shadow: 0 0 0 2px var(--accent-yellow);
+    background: #fdfdfd;
+}
+
+.cycle-btn {
+    background: #6cbd41;
+    color: #ffffff;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-weight: 900;
+    height: 25px;
+    font-size: 10px;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+}
+
+.cycle-btn:hover {
+    background: #407d20;
+    color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.reset-btn {
+    background: #e3375a;
+    color: #ffffff;
+    border: none;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.reset-btn:hover {
+    background: #b80242;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ══════════════════════════════════════════════
+   INFO BAR (Logos + Grid)
+══════════════════════════════════════════════ */
+.demo-info-bar {
+    background: #f1f3f5;
+    color: #333;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 3px solid #dee2e6;
+}
+
+.logo-section-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.company-name {
+    display: flex;
+    flex-direction: column;
+}
+
+.name-en {
+    font-weight: 800;
+    font-size: 14px;
+    color: #1a237e;
+}
+
+.name-ar {
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
+}
+
+.info-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin: 0 20px;
+    align-items: center;
+}
+
+.info-grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    background: transparent;
+    border: none;
+}
+
+.values-grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+}
+
+.info-field {
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    padding: 2px 6px;
+    font-size: 9px;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+    border: 1px solid #e9ecef;
+    width: 180px;
+}
+
+.info-field:hover {
+    background: #1c1f26;
+    border-color: #343a40;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.info-field:hover .info-label {
+    color: #adb5bd;
+}
+
+.info-field:hover .info-value {
+    color: var(--accent-green);
+}
+
+.info-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #6c757d;
+    margin-bottom: 0px;
+    letter-spacing: 0.3px;
+}
+
+.info-value {
+    color: #1a237e;
+    font-weight: 800;
+    font-size: 11px;
+    text-align: right;
+}
+
+.logo-section-right img {
+    height: 35px;
+    min-width: 100%;
+    width: auto;
+}
+
+/* ══════════════════════════════════════════════
+   VALUES BAR (Time/Pressure Highlights)
+══════════════════════════════════════════════ */
+.demo-values-bar {
+    background: var(--bg-values-bar);
+    display: flex;
+    justify-content: space-around;
+    padding: 4px 10px;
+    border-top: 1px solid #333;
+    border-bottom: 2px solid #555;
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.value-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 8px;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+}
+
+.value-box:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.v-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.v-label.yellow {
+    color: var(--accent-yellow);
+}
+
+.v-label.green {
+    color: var(--accent-green);
+}
+
+.v-data {
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+}
+
+/* ══════════════════════════════════════════════
+   DASHBOARD PANEL
+══════════════════════════════════════════════ */
+.demo-main {
+    padding: 0;
+}
+
+.demo-dashboard-panel {
+    background: var(--bg-panel);
+    padding: 8px 15px;
+}
+
+/* Four gauges in one horizontal row (scroll on narrow screens) */
+.demo-gauge-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 15px;
+    margin-bottom: 5px;
+    align-items: stretch;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.demo-gauge-card {
+    background: var(--bg-card);
+    border: 1px solid #333;
+    flex: 1 1 0;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.demo-gauge-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    border-color: #444;
+}
+
+.demo-card-header {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.c-title {
+    color: white;
+}
+
+.c-sn {
+    color: var(--accent-yellow);
+}
+
+.c-status {
+    color: var(--accent-green);
+}
+
+.demo-gauge-wrap {
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    min-height: 180px;
+}
+
+.demo-gauge-svg {
+    width: 100%;
+    max-width: 200px;
+}
+
+.demo-card-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+#gaugeCanvas1 {
+    width: 210px;
+    height: 210px;
+}
+
+.f-item {
+    padding: 5px;
+    text-align: center;
+    border-right: 1px solid #333;
+}
+
+.f-label {
+    display: block;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+
+.f-value {
+    font-size: 14px;
+    font-weight: 800;
+    color: white;
+}
+
+/* ══════════════════════════════════════════════
+   GRAPH SECTION
+══════════════════════════════════════════════ */
+.demo-graph-section {
+    background: #222;
+    padding: 5px 5px 20px 5px;
+}
+
+.section-divider {
+    font-weight: 800;
+    text-align: center;
+    color: var(--text-dim);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+.demo-chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(2, auto);
+    grid-auto-flow: row;
+    gap: 20px;
+}
+
+.demo-chart-box {
+    background: var(--bg-card);
+    border: 1px solid #333;
+    padding: 8px;
+    min-width: 100px;
+    min-height: 300px;
+}
+
+.chart-title {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.chart-wrap {
+    position: relative;
+    height: 280px;
+    width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .demo-gauge-row {
+        gap: 12px;
+    }
+
+    .demo-gauge-card {
+        min-width: 0;
+    }
+
+    .demo-chart-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .demo-chart-grid {
+        grid-template-columns: 1fr;
+        grid-auto-flow: row;
+    }
+
+    .demo-gauge-card {
+        flex: 1 1 160px;
+        min-width: 140px;
+    }
+
+    .info-grid-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.active-test {
+    background-color: orange !important;
+    color: black !important;
+}
+
+.completed-test {
+    background-color: rgb(0, 47, 128) !important;
+    color: white !important;
+}

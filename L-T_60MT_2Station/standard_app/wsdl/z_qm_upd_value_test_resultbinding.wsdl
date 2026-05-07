@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsoap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:n1="urn:sap-com:document:sap:rfc:functions">
+  <wsdl:types>
+    <xsd:schema attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:rfc:functions">
+      <xsd:simpleType name="char10">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="10"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char100">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="100"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char12">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="12"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char18">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="18"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char225">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="225"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char40">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="40"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char50">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="50"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="char80">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="80"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="date10">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="10"/>
+          <xsd:pattern value="\d\d\d\d-\d\d-\d\d"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="numeric1">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="1"/>
+          <xsd:pattern value="\d*"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="quantum5.0">
+        <xsd:restriction base="xsd:decimal">
+          <xsd:totalDigits value="5"/>
+          <xsd:fractionDigits value="0"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="quantum7.1">
+        <xsd:restriction base="xsd:decimal">
+          <xsd:totalDigits value="7"/>
+          <xsd:fractionDigits value="1"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="time">
+        <xsd:restriction base="xsd:time">
+          <xsd:pattern value="[0-9]{2}:[0-9]{2}:[0-9]{2}"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:simpleType name="unit3">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="3"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:schema>
+    <xsd:schema attributeFormDefault="qualified" targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:n0="urn:sap-com:document:sap:rfc:functions">
+      <xsd:import namespace="urn:sap-com:document:sap:rfc:functions"/>
+      <xsd:simpleType name="RfcException.Message.Number">
+        <xsd:restriction base="xsd:string">
+          <xsd:maxLength value="3"/>
+          <xsd:pattern value="\d*"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:complexType name="ZmmtsValveTestResult">
+        <xsd:sequence>
+          <xsd:element name="ZfgSlno" type="n0:char18"/>
+          <xsd:element name="Matnr" type="n0:char18"/>
+          <xsd:element name="ZprTestType" type="xsd:unsignedByte"/>
+          <xsd:element name="ZprTestCmbRef" type="xsd:unsignedByte"/>
+          <xsd:element name="ZtestDurUnit" type="n0:unit3"/>
+          <xsd:element name="ZtestDurationTar" type="n0:quantum5.0"/>
+          <xsd:element name="ZtestDurationAct" type="n0:quantum5.0"/>
+          <xsd:element name="ZtestPrUnit" type="n0:unit3"/>
+          <xsd:element name="ZtestPreValTar" type="n0:quantum7.1"/>
+          <xsd:element name="ZtestPreValAct" type="n0:quantum7.1"/>
+          <xsd:element name="ZtestTimeStart" type="n0:time"/>
+          <xsd:element name="ZtestTimeEnd" type="n0:time"/>
+          <xsd:element name="ZtestedBy" type="n0:char80"/>
+          <xsd:element name="ZapprovedBy" type="n0:char80"/>
+          <xsd:element name="ZvalveDrying" type="n0:char50"/>
+          <xsd:element name="ZresultDrying" type="n0:char50"/>
+          <xsd:element name="ZtestRemarks" type="n0:char100"/>
+          <xsd:element name="ZtestStatus" type="n0:char50"/>
+          <xsd:element name="GagMode1" type="n0:char40"/>
+          <xsd:element name="GagSlno1" type="n0:char18"/>
+          <xsd:element name="GagCalDue1" type="n0:char10"/>
+          <xsd:element name="GagMode2" type="n0:char40"/>
+          <xsd:element name="GagSlno2" type="n0:char18"/>
+          <xsd:element name="GagCalDue2" type="n0:char10"/>
+          <xsd:element name="Erdat" type="n0:date10"/>
+          <xsd:element name="Aedat" type="n0:date10"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="RfcException.Message">
+        <xsd:sequence>
+          <xsd:element name="ID" type="xsd:string"/>
+          <xsd:element name="Number" type="tns:RfcException.Message.Number"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ZQmUpdValueTestResult.RfcException">
+        <xsd:sequence>
+          <xsd:element name="Name" type="tns:ZQmUpdValueTestResult.RfcExceptions"/>
+          <xsd:element name="Text" type="xsd:string" minOccurs="0"/>
+          <xsd:element name="Message" type="tns:RfcException.Message" minOccurs="0"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:simpleType name="ZQmUpdValueTestResult.RfcExceptions">
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="Error"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+      <xsd:element name="ZQmUpdValueTestResult.Exception" type="tns:ZQmUpdValueTestResult.RfcException"/>
+      <xsd:element name="ZQmUpdValueTestResult">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="IpLoginUser" type="n0:char12"/>
+            <xsd:element name="IsValveTestResult" type="tns:ZmmtsValveTestResult"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ZQmUpdValueTestResultResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="EpExcmsg" type="n0:char225"/>
+            <xsd:element name="EpSuccess" type="n0:numeric1"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="ZQmUpdValueTestResult">
+    <wsdl:part name="parameters" element="tns:ZQmUpdValueTestResult"/>
+  </wsdl:message>
+  <wsdl:message name="ZQmUpdValueTestResultResponse">
+    <wsdl:part name="parameters" element="tns:ZQmUpdValueTestResultResponse"/>
+  </wsdl:message>
+  <wsdl:message name="ZQmUpdValueTestResult.Exception">
+    <wsdl:part name="ZQmUpdValueTestResult.Exception" element="tns:ZQmUpdValueTestResult.Exception"/>
+  </wsdl:message>
+  <wsdl:portType name="Z_QM_UPD_VALUE_TEST_RESULT">
+    <wsdl:documentation>
+      <sapdoc:sapdoc xmlns:sapdoc="urn:sap:esi:documentation">
+        <sapdoc:docitem applicationComponent="CA"/>
+      </sapdoc:sapdoc>
+    </wsdl:documentation>
+    <wsdl:operation name="ZQmUpdValueTestResult">
+      <wsdl:input message="tns:ZQmUpdValueTestResult"/>
+      <wsdl:output message="tns:ZQmUpdValueTestResultResponse"/>
+      <wsdl:fault name="ZQmUpdValueTestResult.Exception" message="tns:ZQmUpdValueTestResult.Exception"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="Z_QM_UPD_VALUE_TEST_RESULTbinding" type="tns:Z_QM_UPD_VALUE_TEST_RESULT">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <wsdl:operation name="ZQmUpdValueTestResult">
+      <soap:operation soapAction="urn:sap-com:document:sap:soap:functions:mc-style:Z_QM_UPD_VALUE_TEST_RESULT:ZQmUpdValueTestResultRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="ZQmUpdValueTestResult.Exception">
+        <soap:fault name="ZQmUpdValueTestResult.Exception" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Z_QM_UPD_VALUE_TEST_RESULTservice">
+    <wsdl:port name="Z_QM_UPD_VALUE_TEST_RESULTbinding" binding="tns:Z_QM_UPD_VALUE_TEST_RESULTbinding">
+      <soap:address location="http://sap.lntvalves.com:8000/sap/bc/srt/rfc/sap/z_qm_upd_value_test_result/999/z_qm_upd_value_test_resultservic/z_qm_upd_value_test_resultbinding"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

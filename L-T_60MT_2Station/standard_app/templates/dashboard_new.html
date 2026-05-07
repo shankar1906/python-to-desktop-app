@@ -1,0 +1,469 @@
+{% extends 'base_new.html' %}
+{% load static %}
+
+{% block header_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard_new.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Content -->
+<div class="dashboard-container">
+  <!-- Welcome Section -->
+  <div class="welcome-card">
+    <div class="welcome-content">
+      <div class="welcome-text">
+        <h2>Welcome Back, {{ username|default:"Admin" }}</h2>
+        <p>Here's an overview of valve testing data</p>
+      </div>
+      <div class="last-login-info">
+        <div class="last-login-label">Last Login</div>
+        <div class="last-login-time">{{ last_login|default:"Never" }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <!-- Stat Card 1 -->
+    <div class="stat-card stat-card-green">
+      <div class="card-icon"></div>
+      <div class="card-badge">+2 valves today</div>
+      <h3 class="card-title">Tested Valves</h3>
+      <h3 class="card-value">2500</h3>
+    </div>
+
+    <!-- Stat Card 2 -->
+    <div class="stat-card stat-card-red">
+      <div class="card-icon"></div>
+      <div class="card-badge">+2 valves today</div>
+      <h3 class="card-title">Tested Valves</h3>
+      <h3 class="card-value">2500</h3>
+    </div>
+
+    <!-- Stat Card 3 -->
+    <div class="stat-card stat-card-white">
+      <div class="card-icon card-icon-yellow"></div>
+      <div class="card-badge card-badge-yellow">+2 valves today</div>
+      <h3 class="card-title card-title-dark">Tested Valves</h3>
+      <h3 class="card-value card-value-dark">2500</h3>
+    </div>
+
+    <!-- Stat Card 4 -->
+    <div class="stat-card stat-card-white">
+      <div class="card-icon card-icon-pink"></div>
+      <div class="card-badge card-badge-pink" id="sync-nonsync_mode"></div>
+      <h3 class="card-title card-title-dark">Sync & Non-sync Status</h3>
+      <h3 class="card-value card-value-dark"></h3>
+    </div>
+  </div>
+
+
+
+  <div class="testing-card">
+    <div class="testing-inner d-flex justify-content-between">
+
+      <!-- LEFT BLOCK -->
+      <div class="left-block d-flex align-items-center">
+
+        <h2 class="m-0">Start Valve Testing</h2>
+
+        <div class="d-flex gap-2">
+
+          <a href="#" class="btn btn-green" onclick="newtest()">New Test</a>
+          <a href="#" class="btn btn-blue" onclick="continue_test()">Continue Test</a>
+        </div>
+
+      </div>
+
+      <!-- RIGHT BLOCK -->
+      <div class="right-block border-start ps-4">
+        <h5 class="fw-semibold mb-2">Connection Status</h5>
+        <div class="status-row d-flex align-items-center gap-4">
+
+          <div class="d-flex align-items-center mb-1">
+            <span class="status-dot bg-success"></span>
+            <span class="ms-2">HMI Connected</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- Bottom Section -->
+  <div class="bottom-section">
+    <!-- Alerts Carousel -->
+    <div class="alerts-card">
+      <div class="alerts-header d-flex justify-content-between align-items-center mb-3">
+        <h3 id="alertsTitle">Recent Alerts</h3>
+        <div class="carousel-controls">
+          <button id="prevAlert" class="carousel-btn" onclick="prevAlertCard()" disabled>
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button id="nextAlert" class="carousel-btn" onclick="nextAlertCard()">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Alerts Card -->
+      <div id="recentAlertsCard" class="alert-card-content active">
+        <div id="alarmsList" class="alerts-list">
+          <!-- Alarms will be inserted here by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Gauge Alerts Card -->
+      <div id="gaugeAlertsCard" class="alert-card-content">
+        <div id="gaugeAlertsList" class="alerts-list">
+          <!-- Gauge Calibration Alerts will be inserted here by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Machine Image -->
+    <div class="machine-card">
+      <!-- <video class="machine-image" autoplay loop muted playsinline>
+        <source src="{% static 'videos/bray_video.mp4' %}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video> -->
+      <img src="{% static 'images/10MT.png' %}" alt="Machine Image" class="machine-image">
+    </div>
+  </div>
+
+
+  <style>
+    #debug {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: black;
+      color: white;
+      padding: 5px 10px;
+      font-size: 14px;
+      z-index: 999999;
+      font-family: monospace;
+    }
+  </style>
+
+</div>
+
+
+<script>
+
+
+  var hmistatus = ""
+  // HMI AND ABRS CONNECTION STATUS CHECKING //
+  function checkConnections() {
+    fetch('/api/user_config/get_hmi_abrs/', { credentials: 'same-origin' })
+      .then(async (response) => {
+        if (!response.ok) {
+          const body = await response.text().catch(() => '');
+          throw new Error(`get_hmi_abrs failed: HTTP ${response.status} ${response.statusText} ${body ? `- ${body.slice(0, 200)}` : ''}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        const hmiStatusDot = document.querySelector('.right-block .status-row .d-flex:nth-child(1) .status-dot');
+        const hmiStatusText = document.querySelector('.right-block .status-row .d-flex:nth-child(1) span.ms-2');
+        hmistatus = data.hmi_connection;
+
+        const sync_nonsync_status = data.sync_nonsync_status;
+        document.getElementById('sync-nonsync_mode').innerHTML = sync_nonsync_status;
+
+        // Update alarms display
+        if (data.recent_alarms && data.recent_alarms.length > 0) {
+          updateAlarmsDisplay(data.recent_alarms);
+        } else {
+          console.log('⚠️ No alarms to display');
+        }
+
+        // Update gauge calibration alerts display
+        if (data.gauge_calibration_alerts) {
+          updateGaugeAlertsDisplay(data.gauge_calibration_alerts);
+        } else {
+          console.log('⚠️ No gauge calibration alerts to display');
+        }
+        // Update HMI status
+        if (data.hmi_connection == 1) {
+          hmiStatusDot.classList.remove('bg-danger');
+          hmiStatusDot.classList.add('bg-success');
+          hmiStatusText.textContent = 'HMI Connected';
+        } else {
+          hmiStatusDot.classList.remove('bg-success');
+          hmiStatusDot.classList.add('bg-danger');
+          hmiStatusText.textContent = 'HMI Disconnected';
+        }
+
+      })
+      .catch(error => {
+        console.error('Error checking connections:', error);
+      });
+  }
+
+  function updateAlarmsDisplay(alarms) {
+    const alarmsList = document.getElementById('alarmsList');
+
+    if (!alarmsList) {
+      console.error('alarmsList element not found!');
+      return;
+    }
+
+    // Store current scroll position
+    const scrollTop = alarmsList.scrollTop;
+
+    if (alarms.length === 0) {
+      const noAlarmsHtml = `
+        <div class="alert-item alert-yellow">
+          <img src="{% static 'images/danger-yellow.png' %}" alt="Alert" class="alert-icon">
+          <span class="alert-text">No recent alarms</span>
+        </div>
+      `;
+
+      // Only update if content has changed
+      if (alarmsList.innerHTML.trim() !== noAlarmsHtml.trim()) {
+        alarmsList.innerHTML = noAlarmsHtml;
+      }
+      return;
+    }
+
+    // Build alarms HTML
+    let alarmsHtml = '';
+    alarms.forEach((alarm, index) => {
+      // Alternate between red and yellow alerts
+      const alertClass = index % 2 === 0 ? 'alert-red' : 'alert-yellow';
+      const iconSrc = index % 2 === 0 ?
+        "{% static 'images/danger.png' %}" :
+        "{% static 'images/danger-yellow.png' %}";
+
+      alarmsHtml += `
+        <div class="alert-item ${alertClass}">
+          <img src="${iconSrc}" alt="Alert" class="alert-icon">
+          <span class="alert-text">${alarm.alarm_name} - ${alarm.time_ago}</span>
+        </div>
+      `;
+    });
+
+    // Only update if content has changed to prevent unnecessary DOM manipulation
+    if (alarmsList.innerHTML.trim() !== alarmsHtml.trim()) {
+      alarmsList.innerHTML = alarmsHtml;
+      // Restore scroll position
+      alarmsList.scrollTop = scrollTop;
+    }
+  }
+
+  function updateGaugeAlertsDisplay(gaugeAlerts) {
+    const gaugeAlertsList = document.getElementById('gaugeAlertsList');
+
+    if (!gaugeAlertsList) {
+      console.error('gaugeAlertsList element not found!');
+      return;
+    }
+
+    // Store current scroll position
+    const scrollTop = gaugeAlertsList.scrollTop;
+
+    if (gaugeAlerts.length === 0) {
+      const noAlertsHtml = `
+        <div class="alert-item alert-yellow">
+          <img src="{% static 'images/danger-yellow.png' %}" alt="Alert" class="alert-icon">
+          <span class="alert-text">No gauge calibration alerts</span>
+        </div>
+      `;
+
+      // Only update if content has changed
+      if (gaugeAlertsList.innerHTML.trim() !== noAlertsHtml.trim()) {
+        gaugeAlertsList.innerHTML = noAlertsHtml;
+      }
+      return;
+    }
+
+    // Build gauge alerts HTML
+    let gaugeAlertsHtml = '';
+    gaugeAlerts.forEach((alert, index) => {
+      // Use yellow for alerts with more days left, red for urgent (1-2 days)
+      const alertClass = alert.days_left <= 2 ? 'alert-red' : 'alert-yellow';
+      const iconSrc = alert.days_left <= 2 ?
+        "{% static 'images/danger.png' %}" :
+        "{% static 'images/danger-yellow.png' %}";
+
+      gaugeAlertsHtml += `
+        <div class="alert-item ${alertClass}">
+          <img src="${iconSrc}" alt="Alert" class="alert-icon">
+          <span class="alert-text">${alert.alert_text}</span>
+        </div>
+      `;
+    });
+
+    // Only update if content has changed to prevent unnecessary DOM manipulation
+    if (gaugeAlertsList.innerHTML.trim() !== gaugeAlertsHtml.trim()) {
+      gaugeAlertsList.innerHTML = gaugeAlertsHtml;
+      // Restore scroll position
+      gaugeAlertsList.scrollTop = scrollTop;
+    }
+  }
+
+  // Alerts Carousel Navigation
+  let currentAlertIndex = 0;
+  const alertCards = ['recentAlertsCard', 'gaugeAlertsCard'];
+  const alertTitles = ['Recent Alerts', 'Gauge Alerts'];
+
+  function updateAlertCard() {
+    // Hide all cards
+    alertCards.forEach((cardId, index) => {
+      const card = document.getElementById(cardId);
+      if (card) {
+        card.classList.remove('active');
+      }
+    });
+
+    // Show current card
+    const currentCard = document.getElementById(alertCards[currentAlertIndex]);
+    if (currentCard) {
+      currentCard.classList.add('active');
+    }
+
+    // Update title
+    const titleElement = document.getElementById('alertsTitle');
+    if (titleElement) {
+      titleElement.textContent = alertTitles[currentAlertIndex];
+    }
+
+    // Update button states
+    const prevBtn = document.getElementById('prevAlert');
+    const nextBtn = document.getElementById('nextAlert');
+
+    if (prevBtn) {
+      prevBtn.disabled = currentAlertIndex === 0;
+    }
+    if (nextBtn) {
+      nextBtn.disabled = currentAlertIndex === alertCards.length - 1;
+    }
+  }
+
+  function nextAlertCard() {
+    if (currentAlertIndex < alertCards.length - 1) {
+      currentAlertIndex++;
+      updateAlertCard();
+    }
+  }
+
+  function prevAlertCard() {
+    if (currentAlertIndex > 0) {
+      currentAlertIndex--;
+      updateAlertCard();
+    }
+  }
+
+  checkConnections();
+  setInterval(checkConnections, 5000); // Check every 5 seconds
+
+
+  // New Test button click //
+
+  function redirectToNewTestForm() {
+    fetch('/api/dashboard/get_new_test_route/')
+      .then(response => response.json())
+      .then(data => {
+        window.location.href = data.route || "/form/";
+      })
+      .catch(() => {
+        window.location.href = "/form/";
+      });
+  }
+
+  function newtest() {
+    fetch('/api/dashboard/check_incomplete_test/')
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'Found') {
+          Swal.fire({
+            title: 'Incomplete Test',
+            icon: 'warning',
+            text: `Incomplete Test Serial Numbers: ${data.data.map(item => item.valve_ser_no).join(', ')}`,
+            confirmButtonText: 'Continue Test',
+            cancelButtonText: 'Delete Test',
+            showCancelButton: true,
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.href = "/livepage/";
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+              fetch('/api/dashboard/delete_test/', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  valve_ser_no: data.data.map(item => item.valve_ser_no).join(', '),
+                }),
+              })
+                .then(response => response.json())
+                .then(data => {
+                  if (data.status === 'Success') {
+                    // Clear all localStorage before starting new test
+                    localStorage.clear();
+
+                    Swal.fire({
+                      title: 'Test Deleted',
+                      icon: 'success',
+                      text: 'Test deleted successfully',
+                      confirmButtonText: 'OK',
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        redirectToNewTestForm();
+                      }
+                    });
+                  }
+                })
+            }
+          });
+        }
+        else {
+          // Clear all localStorage before starting new test
+          localStorage.clear();
+          redirectToNewTestForm();
+        }
+      })
+  }
+
+  function continue_test() {
+    fetch('/api/dashboard/check_incomplete_test/')
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'Found') {
+          Swal.fire({
+            title: 'Incomplete Test',
+            icon: 'warning',
+            text: `Incomplete Test Serial Numbers: ${data.data.map(item => item.valve_ser_no).join(', ')}`,
+            confirmButtonText: 'Continue Test',
+            cancelButtonText: 'Cancel',
+            showCancelButton: true,
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.href = "/livepage/";
+            } else {
+              window.location.href = "/dashboard/";
+            }
+          })
+        }
+        else {
+          Swal.fire({
+            title: 'No Incomplete Test Found',
+            icon: 'info',
+            confirmButtonText: 'OK',
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.href = "/dashboard/";
+            }
+          })
+        }
+
+      })
+  }
+
+</script>
+{% endblock %}

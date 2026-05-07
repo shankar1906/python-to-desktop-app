@@ -1,0 +1,52 @@
+{% load static %}
+{% with serial_id=serial_id assembly_id=assembly_id serial_name=serial_name assembly_name=assembly_name %}
+<div class="row mb-2 align-items-end g-1">
+    {% for vd in top_header_fields %}
+    <div class="col-md-3">
+        <label class="form-label">{{ vd.column_name }}{% if vd.is_mandatory %} *{% endif %}</label>
+        {% if vd.column_name|lower == 'valve serial no' or vd.column_name|lower == 'serial number' %}
+        <div class="valve-serial-wrapper position-relative">
+            <input type="text" id="{{ serial_id }}" name="{{ serial_name }}" class="form-control" placeholder="Scan..."
+                autocomplete="off" data-field-type="{{ vd.data_type }}" {% if vd.is_mandatory %}required{% endif %}>
+        </div>
+        {% elif vd.column_name|lower == 'assembly id' %}
+        <!-- Assembly ID field removed -->
+        {% else %}
+        {% if vd.data_type == 'DROP DOWN' %}
+        <select id="{{ vd.field_id }}_{{ station_suffix }}" name="{{ vd.column_name }}" class="form-select"
+            data-field-type="{{ vd.data_type }}" {% if vd.is_mandatory %}required{% endif %}>
+            <option value="">Select</option>
+            {% for opt in vd.dropdown_options %}<option value="{{ opt }}">{{ opt }}</option>{% endfor %}
+        </select>
+        {% elif vd.data_type == 'DATE' %}
+        <input type="date" id="{{ vd.field_id }}_{{ station_suffix }}" name="{{ vd.column_name }}" class="form-control"
+            data-field-type="{{ vd.data_type }}" {% if vd.is_mandatory %}required{% endif %}>
+        {% else %}
+        <input type="text" id="{{ vd.field_id }}_{{ station_suffix }}" name="{{ vd.column_name }}" class="form-control"
+            data-field-type="{{ vd.data_type }}" {% if vd.is_mandatory %}required{% endif %}>
+        {% endif %}
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+<div class="row g-1">
+    {% for vd in normal_fields %}
+    <div class="col-md-3">
+        <label class="form-label">{{ vd.column_name }}{% if vd.is_mandatory %} *{% endif %}</label>
+        {% if vd.data_type == 'DROP DOWN' %}
+        <select id="{{ vd.field_id }}_{{ station_suffix }}" name="{{ vd.column_name }}" class="form-select"
+            data-field-type="{{ vd.data_type }}" {% if vd.is_mandatory %}required{% endif %}>
+            <option value="">Select</option>
+            {% for opt in vd.dropdown_options %}<option value="{{ opt }}">{{ opt }}</option>{% endfor %}
+        </select>
+        {% elif vd.data_type == 'DATE' %}
+        <input type="date" id="{{ vd.field_id }}_{{ station_suffix }}" name="{{ vd.column_name }}" class="form-control"
+            data-field-type="{{ vd.data_type }}" {% if vd.is_mandatory %}required{% endif %}>
+        {% else %}
+        <input type="text" id="{{ vd.field_id }}_{{ station_suffix }}" name="{{ vd.column_name }}" class="form-control"
+            data-field-type="{{ vd.data_type }}" {% if vd.is_mandatory %}required{% endif %}>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endwith %}

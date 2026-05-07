@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cycle Complete</title>
+  <!-- Bootstrap CSS -->
+  {% load static %}
+  <link href="{% static 'vendor/bootstrap/bootstrap-5.3.3.min.css' %}" rel="stylesheet">
+  <style>
+    .section-card { margin-bottom: 1rem; }
+    .section-card .card-header { font-weight: 600; color: #fff; background-color: #0d6efd; }
+    .type-badge { background-color: #0d6efd; }
+    /* Compact form styling */
+    .compact-form .card { margin-bottom: .4rem; }
+    .compact-form .card-header { padding: .4rem .4rem; font-size: .85rem; }
+    .compact-form .card-body { padding: .5rem .6rem; }
+    .compact-form .row.g-3 { --bs-gutter-x: .5rem; --bs-gutter-y: .4rem; }
+    .compact-form .form-label { margin-bottom: .2rem; font-size: .8rem; }
+    .compact-form .form-control,
+    .compact-form .form-select,
+    .compact-form textarea { padding: .2rem .4rem; font-size: .8rem; height: auto; }
+    .compact-form .btn { padding: .25rem .5rem; font-size: .8rem; }
+    /* Station card layout */
+    .station-card { border: 1px solid #e9ecef; border-radius: .5rem; background: #fff; padding: .5rem; }
+    .station-card .mb-2 { margin-bottom: .5rem !important; }
+    .station-card h5 { font-size: .9rem; }
+    .hidden-card { display: none !important; }
+    /* Grid layout: 5 columns wide, then 4, 3, 2, 1 at breakpoints */
+    .form-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .5rem; }
+    @media (max-width: 1600px) { .form-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (max-width: 1400px) { .form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 1200px) { .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 992px)  { .form-grid { grid-template-columns: 1fr; } }
+    /* Let grid manage spacing */
+    .form-grid .section-card { margin-bottom: 0; }
+    /* Make an element span the full grid width */
+    .form-grid .span-all { grid-column: 1 / -1; }
+  </style>
+</head>
+<body>
+<div class="container py-2">
+  <h4>Valve Station Details - Cycle Complete</h4>
+  <!-- Hidden message container for SweetAlert -->
+  <div id="django-messages" style="display:none;">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="msg" data-tags="{{ message.tags|default:'' }}" data-text="{{ message|escapejs }}"></div>
+      {% endfor %}
+    {% endif %}
+  </div>
+  <div class="mb-3">
+    <div class="row g-3 align-items-center">
+      <div class="col-auto">
+        <span class="badge bg-dark">Total Forms: <span id="total-forms">0</span></span>
+      </div>
+      <div class="col-auto" style="display: none;">
+        <span class="badge bg-success">FBV: <span id="count-fbv">0</span></span>
+      </div>
+      <div class="col-auto">
+        <span class="badge bg-primary">TMBV: <span id="count-tmbv">0</span></span>
+      </div>
+    </div>
+  </div>
+  <hr>
+
+  {% if stations %}
+    <div id="form-container">
+    {% for station in stations %}
+      <section class="station-card" id="form-{{ forloop.counter }}" data-form-index="{{ forloop.counter }}" data-type="{{ station.valve_type|lower }}">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <h5 class="mb-0">
+              <span class="badge rounded-pill me-2 type-badge">#{{ forloop.counter }}</span>
+              Station {{ station.id }}
+            </h5>
+            <small class="text-muted">Type: {{ station.valve_type }} • Serial: <strong>{{ station.valve_serial_number }}</strong></small>
+          </div>
+          <button class="btn btn-outline-primary btn-sm toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#formbody-{{ forloop.counter }}" aria-expanded="false" aria-controls="formbody-{{ forloop.counter }}">
+           Expand
+          </button>
+        </div>
+        <div id="formbody-{{ forloop.counter }}" class="collapse">
+
+        {% if station.valve_type|lower == "floating ball valve" or station.valve_type|lower == "fbv" %}
+        <form method="post" class="border rounded p-2 compact-form" data-station-id="{{ station.id }}">
+          {% csrf_token %}
+          <input type="hidden" name="valve_serial_number" value="{{ station.valve_serial_number }}">
+          <input type="hidden" name="station" value="{{ station.id }}">
+          <input type="hidden" name="valve_type" value="{{ station.valve_type }}">
+          <input type="hidden" name="action" value="save_station">
+          <div class="form-grid">
+          <div class="card section-card">
+            <div class="card-header">Valve Details</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="fbv_valve_type_name_{{ station.id }}" class="form-label">Valve Type Name</label>
+                  <input type="text" id="fbv_valve_type_name_{{ station.id }}" name="valve_type_name" class="form-control form-control-sm" value="{{ station.valve_type }}" readonly>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card section-card">
+            <div class="card-header">Body to Ball</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="fbv_body_ball_power_{{ station.id }}" class="form-label">Measured Power (V)</label>
+                  <input type="text" id="fbv_body_ball_power_{{ station.id }}" name="body_ball_power" class="form-control form-control-sm" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card section-card">
+            <div class="card-header">Body to Stem/Shaft</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="fbv_body_stem_power_{{ station.id }}" class="form-label">Measured Power (V)</label>
+                  <input type="text" id="fbv_body_stem_power_{{ station.id }}" name="body_stem_power" class="form-control form-control-sm" required>
+                </div>
+              </div>
+            </div>
+          </div>
+             {% if station.col7_value == "Yes" %}
+          <div class="card section-card">
+            <div class="card-header">Actuator Timing (seconds)</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="fbv_timing_close_open_{{ station.id }}" class="form-label">Close to Open</label>
+                  <input type="text" id="fbv_timing_close_open_{{ station.id }}" name="timing_close_open" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="fbv_timing_open_close_{{ station.id }}" class="form-label">Open to Close</label>
+                  <input type="text" id="fbv_timing_open_close_{{ station.id }}" name="timing_open_close" class="form-control form-control-sm" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card section-card">
+            <div class="card-header">Actuator Torque Setting (%)</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="fbv_torque_close_open_{{ station.id }}" class="form-label">Close to Open</label>
+                  <input type="text" id="fbv_torque_close_open_{{ station.id }}" name="torque_close_open" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="fbv_torque_open_close_{{ station.id }}" class="form-label">Open to Close</label>
+                  <input type="text" id="fbv_torque_open_close_{{ station.id }}" name="torque_open_close" class="form-control form-control-sm" required>
+                </div>
+              </div>
+            </div>
+          </div>
+         {% endif %}
+         {% if station.col11_value == "Yes" %}
+          <div class="card section-card">
+            <div class="card-header">Run Torque</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="fbv_run_torque_{{ station.id }}" class="form-label">Run Torque @ Atmospheric Pressure (Nm)</label>
+                  <input type="text" id="fbv_run_torque_{{ station.id }}" name="run_torque" class="form-control form-control-sm" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card section-card">
+            <div class="card-header">Torque Test (Nm)</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="fbv_torque_lh_{{ station.id }}" class="form-label">BTO at LH</label>
+                  <input type="text" id="fbv_torque_lh_{{ station.id }}" name="torque_lh" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="fbv_torque_rh_{{ station.id }}" class="form-label">BTO at RH</label>
+                  <input type="text" id="fbv_torque_rh_{{ station.id }}" name="torque_rh" class="form-control form-control-sm" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card section-card">
+            <div class="card-header">Tightness of Gear Unit Position Stopper</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-8 col-lg-6">
+                  <label for="fbv_gear_unit_stopper_{{ station.id }}" class="form-label">Torque / Description</label>
+                  <input type="text" id="fbv_gear_unit_stopper_{{ station.id }}" name="gear_unit_stopper" class="form-control form-control-sm" required>
+                </div>
+              </div>
+            </div>
+          </div>
+         {% endif %}
+          <div class="card section-card">
+            <div class="card-header">Measured Power (V)</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="fbv_measured_power_{{ station.id }}" class="form-label">Power</label>
+                  <input type="text" id="fbv_measured_power_{{ station.id }}" name="measured_power" class="form-control form-control-sm" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card section-card" style="display: none;">
+    <div class="card-header">Water Drying Technique (QM-7B)</div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="fbv_technique_result_{{ station.id }}" class="form-label">Technique</label>
+                <select id="fbv_technique_result_{{ station.id }}" name="technique_result" class="form-select form-select-sm">
+                    <option value="">Select</option>
+                    <option value="Comp. Air">Comp. Air</option>
+                    <option value="Vacuum">Vacuum</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+          <div class="card section-card">
+            <div class="card-header">Abnormal Sound During Operation</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="fbv_check_sound_{{ station.id }}" class="form-label">Result</label>
+                  <input type="text" id="fbv_check_sound_{{ station.id }}" name="check_sound" class="form-control form-control-sm" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card section-card">
+            <div class="card-header">Water Draining After Testing</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="fbv_draining_test_{{ station.id }}" class="form-label">Result</label>
+                  <input type="text" id="fbv_draining_test_{{ station.id }}" name="draining_test" class="form-control form-control-sm" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card section-card">
+            <div class="card-header">Remarks</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label for="fbv_remarks_{{ station.id }}" class="form-label">Additional Notes</label>
+                  <textarea id="fbv_remarks_{{ station.id }}" name="remarks" rows="2" class="form-control form-control-sm"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+          <div class="span-all mt-3 d-flex gap-2">
+            <button type="submit" name="action" value="save_station" class="btn btn-primary btn-sm save-btn" data-station-id="{{ station.id }}">Save</button>
+          </div>
+        </form>
+        </div>
+
+        {% elif station.valve_type|lower == "tmbv" or station.valve_type|lower == "trunnion mounted ball valve" %}
+      <form method="post" class="border rounded p-3 compact-form" data-station-id="{{ station.id }}">
+  {% csrf_token %}
+  <input type="hidden" name="valve_serial_number" value="{{ station.valve_serial_number }}">
+  <input type="hidden" name="station" value="{{ station.id }}">
+  <input type="hidden" name="valve_type" value="{{ station.valve_type }}">
+  
+  <div class="form-grid">
+
+    <!-- Valve Details -->
+    <div class="card section-card">
+      <div class="card-header">Valve Details</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <label for="tmbv_valve_type_name_{{ station.id }}" class="form-label">Valve Type Name</label>
+          <input type="text" id="tmbv_valve_type_name_{{ station.id }}" name="valve_type_name" class="form-control form-control-sm" value="{{ station.valve_type }}" readonly>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body to Ball -->
+    <div class="card section-card">
+      <div class="card-header">Body to Ball</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="tmbv_body_ball_power_{{ station.id }}" class="form-label">Measured Power(V)</label>
+            <input type="text" id="tmbv_body_ball_power_{{ station.id }}" name="body_to_ball_power" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label for="tmbv_body_ball_resistance_{{ station.id }}" class="form-label">Measured Resistance(Ω)</label>
+            <input type="text" id="tmbv_body_ball_resistance_{{ station.id }}" name="body_to_ball_resistance" class="form-control form-control-sm">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body to Stem/Shaft -->
+    <div class="card section-card">
+      <div class="card-header">Body to Stem/Shaft</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="tmbv_body_stem_power_{{ station.id }}" class="form-label">Measured Power(V)</label>
+            <input type="text" id="tmbv_body_stem_power_{{ station.id }}" name="body_to_stem_power" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label for="tmbv_body_stem_resistance_{{ station.id }}" class="form-label">Measured Resistance(Ω)</label>
+            <input type="text" id="tmbv_body_stem_resistance_{{ station.id }}" name="body_to_stem_resistance" class="form-control form-control-sm">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actuator Timing -->
+    <div class="card section-card">
+      <div class="card-header">Actuator Timing (seconds)</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="tmbv_timing_close_open_{{ station.id }}" class="form-label">Close to Open</label>
+            <input type="text" id="tmbv_timing_close_open_{{ station.id }}" name="actuator_timing_close_open" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label for="tmbv_timing_open_close_{{ station.id }}" class="form-label">Open to Close</label>
+            <input type="text" id="tmbv_timing_open_close_{{ station.id }}" name="actuator_timing_open_close" class="form-control form-control-sm">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actuator Torque Setting -->
+    <div class="card section-card">
+      <div class="card-header">Actuator Torque Setting (%)</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="tmbv_torque_close_open_{{ station.id }}" class="form-label">Close to Open</label>
+            <input type="text" id="tmbv_torque_close_open_{{ station.id }}" name="torque_setting_close_open" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label for="tmbv_torque_open_close_{{ station.id }}" class="form-label">Open to Close</label>
+            <input type="text" id="tmbv_torque_open_close_{{ station.id }}" name="torque_setting_open_close" class="form-control form-control-sm">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actuator Sizing Pressure -->
+    <div class="card section-card">
+      <div class="card-header">Actuator Sizing Pressure</div>
+      <div class="card-body">
+        <label for="tmbv_sizing_pressure_{{ station.id }}" class="form-label">Actuator Sizing Pressure (psig)</label>
+        <input type="text" id="tmbv_sizing_pressure_{{ station.id }}" name="actuator_sizing_pressure" class="form-control form-control-sm">
+      </div>
+    </div>
+
+    <!-- Run Torque -->
+    <div class="card section-card">
+      <div class="card-header">Run Torque</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Set</label>
+            <input type="text" name="run_torque_set" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Result</label>
+            <input type="text" name="run_torque_result" class="form-control form-control-sm">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gear Unit Position Stopper -->
+    <div class="card section-card">
+      <div class="card-header">Tightness of Gear Unit Position Stopper</div>
+      <div class="card-body">
+        <label for="tmbv_gear_unit_stopper_{{ station.id }}" class="form-label">Torque / Description</label>
+        <input type="text" id="tmbv_gear_unit_stopper_{{ station.id }}" name="gear_unit_stopper_torque" class="form-control form-control-sm">
+      </div>
+    </div>
+
+    <!-- Water Drying Technique -->
+    <div class="card section-card">
+      <div class="card-header">Water Drying Technique as per QM-7B</div>
+      <div class="card-body">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="tmbv_drying_comp_air_{{ station.id }}" name="drying_technique_compressed_air" value="Compressed Air">
+          <label class="form-check-label" for="tmbv_drying_comp_air_{{ station.id }}">Compressed Air</label>
+        </div>
+        <div class="form-check mt-1">
+          <input class="form-check-input" type="checkbox" id="tmbv_drying_vacuum_{{ station.id }}" name="drying_technique_vacuum" value="Vacuum">
+          <label class="form-check-label" for="tmbv_drying_vacuum_{{ station.id }}">Vacuum</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Abnormal Sound -->
+    <div class="card section-card">
+      <div class="card-header">Abnormal Sound During Operation</div>
+      <div class="card-body">
+        <label class="form-label">Result</label>
+        <input type="text" name="abnormal_sound_result" class="form-control form-control-sm" required>
+      </div>
+    </div>
+
+    <!-- Water Draining -->
+    <div class="card section-card">
+      <div class="card-header">Water Draining After Testing</div>
+      <div class="card-body">
+        <label class="form-label">Result</label>
+        <input type="text" name="water_draining_result" class="form-control form-control-sm" required>
+      </div>
+    </div>
+
+    <!-- Result of Drying -->
+    <div class="card section-card">
+      <div class="card-header">Result of Drying</div>
+      <div class="card-body">
+        <label class="form-label">Result</label>
+        <input type="text" name="drying_result" class="form-control form-control-sm" required>
+      </div>
+    </div>
+
+    <!-- Gear Unit Detail -->
+    <div class="card section-card">
+      <div class="card-header">Gear Unit Detail</div>
+      <div class="card-body">
+        <label class="form-label">Result</label>
+        <input type="text" name="gear_unit_details" class="form-control form-control-sm" required>
+      </div>
+    </div>
+
+    <!-- Actuator Detail -->
+    <div class="card section-card">
+      <div class="card-header">Actuator Detail</div>
+      <div class="card-body">
+        <label class="form-label">Result</label>
+        <input type="text" name="actuator_details" class="form-control form-control-sm" required>
+      </div>
+    </div>
+
+    <!-- Antistatic Test -->
+    <div class="card section-card">
+      <div class="card-header">Antistatic Test-Resistance < 10 (Ω)(Optional)</div>
+      <div class="card-body">
+        <label class="form-label">Result</label>
+        <input type="text" name="antistatic_test_result" class="form-control form-control-sm">
+      </div>
+    </div>
+
+    <!-- Test Water Temperature -->
+    <div class="card section-card">
+      <div class="card-header">Test Water Temperature in degree Celsius</div>
+      <div class="card-body">
+        <label class="form-label">Result</label>
+        <input type="text" name="water_temperature_result" class="form-control form-control-sm">
+      </div>
+    </div>
+
+    <!-- Seat Test Stabilization Time -->
+    <div class="card section-card">
+      <div class="card-header">Seat Test stabilization time in minutes</div>
+      <div class="card-body">
+        <label class="form-label">Result</label>
+        <input type="text" name="seat_test_stabilization_time" class="form-control form-control-sm">
+      </div>
+    </div>
+
+    <!-- Plug Tightening Torque -->
+    <div class="card section-card">
+      <div class="card-header">Plug Tightening Torque -nm(During Shell Test)</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Drain Plug</label>
+            <input type="text" name="drain_plug_torque" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Vent Plug</label>
+            <input type="text" name="vent_plug_torque" class="form-control form-control-sm">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stem Position -->
+    <div class="card section-card">
+      <div class="card-header">Stem Position</div>
+      <div class="card-body">
+        <label class="form-label">Stem Position</label>
+        <select name="stem_position" class="form-select form-select-sm">
+          <option value="">Select</option>
+          <option value="Vertical">Vertical</option>
+          <option value="Horizontal">Horizontal</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Remarks -->
+    <div class="card section-card">
+      <div class="card-header">Remarks</div>
+      <div class="card-body">
+        <label class="form-label">Additional Remarks</label>
+        <textarea name="remarks" rows="2" class="form-control form-control-sm"></textarea>
+      </div>
+    </div>
+
+    <!-- Seat Test -->
+    <div class="card section-card">
+      <div class="card-header">Seat Test</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Vent - set Pressure</label>
+            <input type="text" name="seat_test_vent_set_pressure" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Drain - Set Pressure</label>
+            <input type="text" name="seat_test_drain_set_pressure" class="form-control form-control-sm">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Vent - actual pressure</label>
+            <input type="text" name="seat_test_vent_actual_pressure" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Drain - actual pressure</label>
+            <input type="text" name="seat_test_drain_actual_pressure" class="form-control form-control-sm">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Vent - dur min</label>
+            <input type="text" name="seat_test_vent_duration_min" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Drain - Dur min</label>
+            <input type="text" name="seat_test_drain_duration_min" class="form-control form-control-sm">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Torque @ Rated Pressure -->
+    <div class="card section-card">
+      <div class="card-header">Torque @ Rated Pressure (Nm)</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">BTO (DBB) - Required Pressure</label>
+            <input type="text" name="torque_bto_dbb_required" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">BTO (DBB) - Actual Torque Value</label>
+            <input type="text" name="torque_bto_dbb_actual" class="form-control form-control-sm">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">BTO Connector (L) - Required Pressure</label>
+            <input type="text" name="torque_bto_connector_l_required" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">BTO Connector (L) - Actual Torque Value</label>
+            <input type="text" name="torque_bto_connector_l_actual" class="form-control form-control-sm">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">BTO Connector (R) - Required Pressure</label>
+            <input type="text" name="torque_bto_connector_r_required" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">BTO Connector (R) - Actual Torque Value</label>
+            <input type="text" name="torque_bto_connector_r_actual" class="form-control form-control-sm">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">BTC - Required Pressure</label>
+            <input type="text" name="torque_btc_required" class="form-control form-control-sm">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">BTC - Actual Torque Value</label>
+            <input type="text" name="torque_btc_actual" class="form-control form-control-sm">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="span-all mt-3 d-flex justify-content-start gap-2">
+      <button type="submit" name="action" value="save_station" class="btn btn-primary btn-sm save-btn" data-station-id="{{ station.id }}">Save</button>
+    </div>
+
+  </div>
+</form>
+
+        {% else %}
+          <p>No form available for this valve type.</p>
+        {% endif %}
+      </section>
+    {% endfor %}
+    </div>
+  {% else %}
+    <p class="mt-4">No active stations found.</p>
+  {% endif %}
+  <div class="mt-4 d-flex justify-content-end gap-2">
+    {% if stations %}
+      {% with first=stations.0 %}
+        {% if first.valve_type|lower == "floating ball valve" or first.valve_type|lower == "fbv" %}
+          <a href="/fbv-report/save-to-disk/" class="btn btn-success">Save</a>
+        {% elif first.valve_type|lower == "tmbv" or first.valve_type|lower == "trunnion mounted ball valve" %}
+          <a href="/tmbv-report/save-to-disk/" class="btn btn-primary">Save</a>
+        {% endif %}
+      {% endwith %}
+    {% endif %}
+  </div>
+</div>
+
+<!-- Bootstrap JS (optional for components) -->
+<script src="{% static 'vendor/bootstrap/bootstrap-5.3.3.bundle.min.js' %}"></script>
+<script src="{% static 'vendor/sweetalert2/sweetalert2.min.js' %}"></script>
+<link rel="stylesheet" href="{% static 'vendor/sweetalert2/sweetalert2.min.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+(function() {
+  function updateCounts() {
+    var sections = document.querySelectorAll('section[data-form-index]');
+    var total = sections.length;
+    var fbv = 0, tmbv = 0;
+    sections.forEach(function(sec){
+      var t = (sec.getAttribute('data-type') || '').toLowerCase();
+      if (t === 'floating ball valve' || t === 'fbv') fbv++;
+      else if (t === 'tmbv' || t === 'trunnion mounted ball valve') tmbv++;
+    });
+    document.getElementById('total-forms').textContent = total;
+    document.getElementById('count-fbv').textContent = fbv;
+    document.getElementById('count-tmbv').textContent = tmbv;
+  }
+
+  function applyPersistentCollapseState() {
+    try {
+      document.querySelectorAll('section[data-form-index]').forEach(function(section){
+        var form = section.querySelector('form[data-station-id]');
+        if (!form) return;
+        var sid = form.getAttribute('data-station-id');
+        var collapseBody = section.querySelector('.collapse');
+        var collapseKey = 'station_' + sid + '_collapsed';
+        if (localStorage.getItem(collapseKey) === '1' && collapseBody) {
+          collapseBody.classList.remove('show');
+          var instance = bootstrap.Collapse.getOrCreateInstance(collapseBody, { toggle: false });
+          instance.hide();
+          var toggleBtn = section.querySelector('.toggle-btn');
+          if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    } catch (e) { /* no-op */ }
+  }
+
+  function applyTheme() {
+    document.querySelectorAll('section[data-form-index]').forEach(function(sec){
+      var headers = sec.querySelectorAll('.section-card .card-header');
+      headers.forEach(function(hdr){ hdr.classList.add('color-1'); });
+    });
+  }
+
+  function applyPersistentSerialState() {
+    document.querySelectorAll('form[data-station-id]').forEach(function(frm){
+      var btn = frm.querySelector('.save-btn');
+      if (!btn) return;
+      var serialInput = frm.querySelector('input[name="valve_serial_number"]');
+      var serial = serialInput ? (serialInput.value || '').trim() : '';
+      var sid = frm.getAttribute('data-station-id');
+      var key = serial ? ('serial_' + serial + '_updated') : ('station_' + sid + '_updated');
+      if (localStorage.getItem(key) === '1') {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-success');
+        btn.disabled = false; 
+        btn.textContent = 'Update';
+      }
+    });
+  }
+
+  function restoreFormData() {
+    try {
+      document.querySelectorAll('form[data-station-id]').forEach(function(frm){
+        var sid = frm.getAttribute('data-station-id');
+        var data = localStorage.getItem('formdata_' + sid);
+        if (!data) return;
+        var values = JSON.parse(data);
+        Object.keys(values).forEach(function(name){
+          var el = frm.querySelector('[name="' + name + '"]');
+          if (el) {
+            if (el.type === 'checkbox' || el.type === 'radio') {
+              el.checked = values[name] === true || values[name] === 'true';
+            } else {
+              el.value = values[name];
+            }
+          }
+        });
+      });
+    } catch (e) { console.error('Restore form data failed:', e); }
+  }
+
+  function storeFormDataBeforeSubmit() {
+    document.querySelectorAll('form[data-station-id]').forEach(function(frm){
+      frm.addEventListener('submit', function(){
+        var sid = frm.getAttribute('data-station-id');
+        var data = {};
+        frm.querySelectorAll('input, select, textarea').forEach(function(el){
+          if (el.name) {
+            if (el.type === 'checkbox' || el.type === 'radio') {
+              data[el.name] = el.checked;
+            } else {
+              data[el.name] = el.value;
+            }
+          }
+        });
+        localStorage.setItem('formdata_' + sid, JSON.stringify(data));
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    updateCounts();
+    applyTheme();
+    applyPersistentSerialState();
+    applyPersistentCollapseState();
+    restoreFormData();               
+    storeFormDataBeforeSubmit();     
+
+    // ✅ Intercept form submit: Show SweetAlert BEFORE submission
+    document.querySelectorAll('form[data-station-id]').forEach(function(frm){
+      frm.addEventListener('submit', function(e){
+        e.preventDefault(); // Stop the default reload
+
+        var btn = frm.querySelector('.save-btn');
+        var sid = frm.getAttribute('data-station-id');
+        var serialInput = frm.querySelector('input[name="valve_serial_number"]');
+        var serial = serialInput ? (serialInput.value || '').trim() : '';
+
+        if (btn) {
+          btn.classList.remove('btn-primary');
+          btn.classList.add('btn-success');
+          btn.textContent = 'Update';
+          btn.disabled = true;
+        }
+
+        var key = serial ? ('serial_' + serial + '_updated') : ('station_' + sid + '_updated');
+        localStorage.setItem(key, '1');
+        localStorage.setItem('last_saved_station_id', sid);
+
+        // Show SweetAlert before real submission
+        Swal.fire({
+          icon: 'success',
+          title: 'Saved Successfully!',
+          timer: 5500,
+          showConfirmButton: true
+        }).then(function() {
+          // ✅ After SweetAlert closes, collapse the section
+          var section = frm.closest('section[data-form-index]');
+          var collapseBody = section ? section.querySelector('.collapse') : null;
+          if (collapseBody) {
+            var instance = bootstrap.Collapse.getOrCreateInstance(collapseBody, { toggle: false });
+            instance.hide();
+          }
+          var toggleBtn = section ? section.querySelector('.toggle-btn') : null;
+          if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+          localStorage.setItem('station_' + sid + '_collapsed', '1');
+
+          // ✅ Finally, submit the form programmatically
+          frm.submit();
+        });
+      });
+    });
+  });
+})();
+</script>
+
+<script></script>
+</body>
+</html>
+

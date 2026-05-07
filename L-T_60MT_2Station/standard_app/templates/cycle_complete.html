@@ -1,0 +1,664 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valve Station Details - Cycle Complete</title>
+    <link href="{% static 'vendor/google-fonts/inter.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'vendor/font-awesome/all-6.5.0.min.css' %}">
+    <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+    <script src="{% static 'vendor/sweetalert2/sweetalert2.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'vendor/sweetalert2/sweetalert2.min.css' %}">
+    <style>
+        :root {
+            --primary-blue: #0d6efd;
+            --dark-blue: #132039;
+            --border-color: #dee2e6;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --bg-light: #f8f9fa;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            font-size: 0.82rem;
+        }
+
+        .page-header {
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
+
+        .page-header h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .badge-custom {
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .station-container {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .station-header {
+            padding: 10px 20px;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .station-info h6 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .num-circle {
+            background: var(--primary-blue);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        .station-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .btn-expand {
+            background: #fff;
+            border: 1px solid var(--primary-blue);
+            color: var(--primary-blue);
+            font-size: 0.7rem;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .station-body {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .station-container.collapsed .station-body,
+        .station-container.collapsed .station-footer {
+            display: none;
+        }
+
+        .form-card {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+        }
+
+        .card-title {
+            background: var(--primary-blue);
+            color: white;
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .card-content {
+            padding: 10px;
+            flex-grow: 1;
+        }
+
+        .form-group {
+            margin-bottom: 8px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            width: 100%;
+            background: #fff;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-blue);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.1);
+        }
+
+        .row-compact {
+            display: flex;
+            gap: 8px;
+        }
+
+        .row-compact .form-group {
+            flex: 1;
+        }
+
+        .station-footer {
+            padding: 10px 20px;
+            border-top: 1px solid var(--border-color);
+            background: #fdfdfd;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .btn-save-station {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 5px 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .btn-finalize {
+            position: fixed;
+            bottom: 25px;
+            right: 35px;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 8px 30px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+            z-index: 1000;
+        }
+
+        @media (max-width: 1600px) { .station-body { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 1300px) { .station-body { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 1000px) { .station-body { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 700px) { .station-body { grid-template-columns: 1fr; } }
+
+        /* Specific Span for Torque Table */
+        .span-2 { grid-column: span 2; }
+        @media (max-width: 1000px) { .span-2 { grid-column: span 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="page-header">
+        <h3>Valve Station Details - Cycle Complete</h3>
+        <div class="badge-row">
+            <span class="badge bg-dark badge-custom">Total Forms: {{ stations_data|length }}</span>
+            <span class="badge bg-primary badge-custom">TMBV: {{ stations_data|length }}</span>
+        </div>
+    </div>
+
+    <form id="cycle-complete-form">
+        {% for station in stations_data %}
+        <div class="station-container" id="station-{{ station.id }}">
+            <div class="station-header" onclick="toggleStation('{{ station.id }}')">
+                <div class="station-info">
+                    <h6>
+                        <span class="num-circle">{{ forloop.counter }}</span>
+                        Station {{ station.id }}
+                    </h6>
+                    <div class="station-meta">
+                        Type: {{ station.type_name }} • Serial: <strong>{{ station.valve_ser_no }}</strong>
+                    </div>
+                </div>
+                <button type="button" class="btn-expand" id="btn-{{ station.id }}">Expand</button>
+            </div>
+
+            <div class="station-body">
+                <!-- Valve Details -->
+                <div class="form-card">
+                    <div class="card-title">Valve Details</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Valve Type Name</label>
+                            <input type="text" class="form-control" value="{{ station.type_name }}" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body to Ball -->
+                <div class="form-card">
+                    <div class="card-title">Body to Ball</div>
+                    <div class="card-content">
+                        <div class="row-compact">
+                            <div class="form-group">
+                                <label>Measured Power(V)</label>
+                                <input type="text" name="body_to_ball_power" class="form-control" value="{{ station.extra_fields.body_to_ball_power|default:'' }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Measured Resistance(Ω)</label>
+                                <input type="text" name="body_to_ball_resistance" class="form-control" value="{{ station.extra_fields.body_to_ball_resistance|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body to Stem/Shaft -->
+                <div class="form-card">
+                    <div class="card-title">Body to Stem/Shaft</div>
+                    <div class="card-content">
+                        <div class="row-compact">
+                            <div class="form-group">
+                                <label>Measured Power(V)</label>
+                                <input type="text" name="body_to_stem_power" class="form-control" value="{{ station.extra_fields.body_to_stem_power|default:'' }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Measured Resistance(Ω)</label>
+                                <input type="text" name="body_to_stem_resistance" class="form-control" value="{{ station.extra_fields.body_to_stem_resistance|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actuator Timing -->
+                <div class="form-card">
+                    <div class="card-title">Actuator Timing (seconds)</div>
+                    <div class="card-content">
+                        <div class="row-compact">
+                            <div class="form-group">
+                                <label>Close to Open</label>
+                                <input type="text" name="actuator_timing_close_open" class="form-control" value="{{ station.extra_fields.actuator_timing_close_open|default:'' }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Open to Close</label>
+                                <input type="text" name="actuator_timing_open_close" class="form-control" value="{{ station.extra_fields.actuator_timing_open_close|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actuator Torque Setting -->
+                <div class="form-card">
+                    <div class="card-title">Actuator Torque Setting (%)</div>
+                    <div class="card-content">
+                        <div class="row-compact">
+                            <div class="form-group">
+                                <label>Close to Open</label>
+                                <input type="text" name="torque_setting_close_open" class="form-control" value="{{ station.extra_fields.torque_setting_close_open|default:'' }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Open to Close</label>
+                                <input type="text" name="torque_setting_open_close" class="form-control" value="{{ station.extra_fields.torque_setting_open_close|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actuator Sizing Pressure -->
+                <div class="form-card">
+                    <div class="card-title">Actuator Sizing Pressure</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Actuator Sizing Pressure (psig)</label>
+                            <input type="text" name="actuator_sizing_pressure" class="form-control" value="{{ station.extra_fields.actuator_sizing_pressure|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Run Torque -->
+                <div class="form-card">
+                    <div class="card-title">Run Torque</div>
+                    <div class="card-content">
+                        <div class="row-compact">
+                            <div class="form-group">
+                                <label>Set</label>
+                                <input type="text" name="run_torque_set" class="form-control" value="{{ station.extra_fields.run_torque_set|default:'' }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Result</label>
+                                <input type="text" name="run_torque_result" class="form-control" value="{{ station.extra_fields.run_torque_result|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gear Unit Stopper -->
+                <div class="form-card">
+                    <div class="card-title">Tightness of Gear Unit Position Stopper</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Torque / Description</label>
+                            <input type="text" name="gear_unit_stopper_torque" class="form-control" value="{{ station.extra_fields.gear_unit_stopper_torque|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Water Drying Technique -->
+                <div class="form-card">
+                    <div class="card-title">Water Drying Technique as per QM-7B</div>
+                    <div class="card-content">
+                        <div class="form-check" style="font-size: 0.75rem;">
+                            <input class="form-check-input" type="checkbox" name="drying_technique_compressed_air" value="True" id="dry1-{{ station.id }}" {% if station.extra_fields.drying_technique_compressed_air == 'True' %}checked{% endif %}>
+                            <label class="form-check-label" for="dry1-{{ station.id }}">Compressed Air</label>
+                        </div>
+                        <div class="form-check mt-1" style="font-size: 0.75rem;">
+                            <input class="form-check-input" type="checkbox" name="drying_technique_vacuum" value="True" id="dry2-{{ station.id }}" {% if station.extra_fields.drying_technique_vacuum == 'True' %}checked{% endif %}>
+                            <label class="form-check-label" for="dry2-{{ station.id }}">Vacuum</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Abnormal Sound -->
+                <div class="form-card">
+                    <div class="card-title">Abnormal Sound During Operation</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Result</label>
+                            <input type="text" name="abnormal_sound_result" class="form-control" value="{{ station.extra_fields.abnormal_sound_result|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Water Draining -->
+                <div class="form-card">
+                    <div class="card-title">Water Draining After Testing</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Result</label>
+                            <input type="text" name="water_draining_result" class="form-control" value="{{ station.extra_fields.water_draining_result|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result of Drying -->
+                <div class="form-card">
+                    <div class="card-title">Result of Drying</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Result</label>
+                            <input type="text" name="drying_result" class="form-control" value="{{ station.extra_fields.drying_result|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gear Unit Detail -->
+                <div class="form-card">
+                    <div class="card-title">Gear Unit Detail</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Result</label>
+                            <input type="text" name="gear_unit_details" class="form-control" value="{{ station.extra_fields.gear_unit_details|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actuator Detail -->
+                <div class="form-card">
+                    <div class="card-title">Actuator Detail</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Result</label>
+                            <input type="text" name="actuator_details" class="form-control" value="{{ station.extra_fields.actuator_details|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Antistatic Test -->
+                <div class="form-card">
+                    <div class="card-title">Antistatic Test-Resistance < 10 (Ω) (Optional)</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Result</label>
+                            <input type="text" name="antistatic_test_result" class="form-control" value="{{ station.extra_fields.antistatic_test_result|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Water Temperature -->
+                <div class="form-card">
+                    <div class="card-title">Test Water Temperature in degree Celsius</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Result</label>
+                            <input type="text" name="water_temperature_result" class="form-control" value="{{ station.extra_fields.water_temperature_result|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stabilization Time -->
+                <div class="form-card">
+                    <div class="card-title">Seat Test stabilization time in minutes</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Result</label>
+                            <input type="text" name="seat_test_stabilization_time" class="form-control" value="{{ station.extra_fields.seat_test_stabilization_time|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plug Tightening Torque -->
+                <div class="form-card">
+                    <div class="card-title">Plug Tightening Torque -nm(During Shell Test)</div>
+                    <div class="card-content">
+                        <div class="row-compact">
+                            <div class="form-group">
+                                <label>Drain Plug</label>
+                                <input type="text" name="drain_plug_torque" class="form-control" value="{{ station.extra_fields.drain_plug_torque|default:'' }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Vent Plug</label>
+                                <input type="text" name="vent_plug_torque" class="form-control" value="{{ station.extra_fields.vent_plug_torque|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stem Position -->
+                <div class="form-card">
+                    <div class="card-title">Stem Position</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Stem Position</label>
+                            <select name="stem_position" class="form-select">
+                                <option value="" {% if not station.extra_fields.stem_position %}selected{% endif %}>Select</option>
+                                <option value="Vertical" {% if station.extra_fields.stem_position == 'Vertical' %}selected{% endif %}>Vertical</option>
+                                <option value="Horizontal" {% if station.extra_fields.stem_position == 'Horizontal' %}selected{% endif %}>Horizontal</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Remarks -->
+                <div class="form-card">
+                    <div class="card-title">Remarks</div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Additional Remarks</label>
+                            <textarea name="remarks" class="form-control" style="height: 35px;">{{ station.extra_fields.remarks|default:'' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seat Test Grid -->
+                <div class="form-card span-2">
+                    <div class="card-title">Seat Test</div>
+                    <div class="card-content">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="form-group"><label>Vent - set Pressure</label><input type="text" name="seat_test_vent_set_pressure" class="form-control" value="{{ station.extra_fields.seat_test_vent_set_pressure|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>Drain - Set Pressure</label><input type="text" name="seat_test_drain_set_pressure" class="form-control" value="{{ station.extra_fields.seat_test_drain_set_pressure|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>Vent - actual pressure</label><input type="text" name="seat_test_vent_actual_pressure" class="form-control" value="{{ station.extra_fields.seat_test_vent_actual_pressure|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>Drain - actual pressure</label><input type="text" name="seat_test_drain_actual_pressure" class="form-control" value="{{ station.extra_fields.seat_test_drain_actual_pressure|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>Vent - dur min</label><input type="text" name="seat_test_vent_duration_min" class="form-control" value="{{ station.extra_fields.seat_test_vent_duration_min|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>Drain - Dur min</label><input type="text" name="seat_test_drain_duration_min" class="form-control" value="{{ station.extra_fields.seat_test_drain_duration_min|default:'' }}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Torque @ Rated Pressure -->
+                <div class="form-card span-2">
+                    <div class="card-title">Torque @ Rated Pressure (Nm)</div>
+                    <div class="card-content">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="form-group"><label>BTO (DBB) - Required Pressure</label><input type="text" name="torque_bto_dbb_required" class="form-control" value="{{ station.extra_fields.torque_bto_dbb_required|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>BTO (DBB) - Actual Torque Value</label><input type="text" name="torque_bto_dbb_actual" class="form-control" value="{{ station.extra_fields.torque_bto_dbb_actual|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>BTO Connector (L) - Required Pressure</label><input type="text" name="torque_bto_connector_l_required" class="form-control" value="{{ station.extra_fields.torque_bto_connector_l_required|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>BTO Connector (L) - Actual Torque Value</label><input type="text" name="torque_bto_connector_l_actual" class="form-control" value="{{ station.extra_fields.torque_bto_connector_l_actual|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>BTO Connector (R) - Required Pressure</label><input type="text" name="torque_bto_connector_r_required" class="form-control" value="{{ station.extra_fields.torque_bto_connector_r_required|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>BTO Connector (R) - Actual Torque Value</label><input type="text" name="torque_bto_connector_r_actual" class="form-control" value="{{ station.extra_fields.torque_bto_connector_r_actual|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>BTC - Required Pressure</label><input type="text" name="torque_btc_required" class="form-control" value="{{ station.extra_fields.torque_btc_required|default:'' }}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group"><label>BTC - Actual Torque Value</label><input type="text" name="torque_btc_actual" class="form-control" value="{{ station.extra_fields.torque_btc_actual|default:'' }}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="station-footer">
+                <button type="button" class="btn-save-station" onclick="saveStation('{{ station.id }}')">Save</button>
+            </div>
+        </div>
+        {% endfor %}
+    </form>
+
+    <button type="button" class="btn-finalize" onclick="saveAllAndRedirect()">Save All</button>
+
+    <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script>
+        function toggleStation(sid) {
+            const container = document.getElementById('station-' + sid);
+            const btn = document.getElementById('btn-' + sid);
+            container.classList.toggle('collapsed');
+            btn.textContent = container.classList.contains('collapsed') ? 'Expand' : 'Collapse';
+        }
+
+        function saveStation(sid) {
+            const container = document.getElementById('station-' + sid);
+            const extra_fields = {};
+            const inputs = container.querySelectorAll('input[name], select[name], textarea[name]');
+            
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    extra_fields[input.name] = input.checked ? "True" : "False";
+                } else {
+                    extra_fields[input.name] = input.value.trim();
+                }
+            });
+
+            Swal.fire({
+                title: 'Saving Station ' + sid,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            fetch('/api/cycle_complete/save_station/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ station_id: sid, extra_fields: extra_fields })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire({ title: 'Saved!', icon: 'success', timer: 1000, showConfirmButton: false });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(err => Swal.fire('Error', err.message, 'error'));
+        }
+
+        function saveAllAndRedirect() {
+            Swal.fire({
+                title: 'Finalizing Cycle...',
+                text: 'This will generate reports and complete the cycle.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#0d6efd',
+                confirmButtonText: 'Yes, Finalize All'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Processing...',
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+                    
+                    fetch('/api/cycle_complete/global_save/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire('Completed!', 'Cycle finalized successfully.', 'success')
+                            .then(() => { window.location.href = '/dashboard/'; });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(err => Swal.fire('Error', err.message, 'error'));
+                }
+            });
+        }
+    </script>
+</body>
+</html>

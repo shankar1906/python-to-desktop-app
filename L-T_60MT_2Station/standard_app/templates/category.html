@@ -1,0 +1,55 @@
+{% extends 'base_new.html' %}
+{% load static %}
+{% block header_title %}Category{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'standard_app/css/category.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid table-container-wrapper" data-superuser-level="{{ superuser_level }}">
+    <div class="card">
+        <!-- Hint -->
+        <div class="edit-hint" id="editHint">
+            <div>💡 Tip: Modify values directly in the table cells • Click 'Save' to update</div>
+            <button class="close-btn"
+                onclick="document.getElementById('editHint').style.display='none'">&times;</button>
+        </div>
+        <!-- MAIN FORM -->
+        <form id="categoryForm" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table" id="categoryTable">
+                    <thead>
+                        <tr>
+                            <th class="text-end pe-3" style="width: 60px;">
+                                {% if superuser_level == 2 %}
+                                CATEGORY ID
+                                {% else %}
+                                S.No
+                                {%endif %}
+                            </th>
+                            <th class="text-start" style="width: auto;">CATEGORY NAME</th>
+                            <th class="text-start" style="width: auto;">MEDIUM</th>
+                            <th class="text-start" style="width: 150px;">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryTableBody">
+                        <tr>
+                            <td colspan="4" class="text-center py-4">Loading categories...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="footer-controls">
+                <button type="submit" class="btn btn-success px-4">SAVE</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'scripts/form-validator.js' %}"></script>
+<script src="{% static 'standard_app/js/category.js' %}"></script>
+{% endblock %}

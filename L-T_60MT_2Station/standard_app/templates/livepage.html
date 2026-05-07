@@ -1,0 +1,1653 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Page</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-gauges@2.1.7/gauge.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1"></script>
+    <script src="{% static 'vendor/sweetalert2/sweetalert2.min.js' %}"></script>
+    <link href="{% static 'vendor/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/demo.css' %}">
+    <style>
+        .st-toggle-btn {
+            background: #ee0000;
+            color: #ffffff;
+            border: 1px solid #f1a5a5;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 9px;
+            cursor: pointer;
+            font-weight: 900;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            min-width: 65px;
+            /* margin: 0 5px; */
+            line-height: 1.2;
+        }
+
+        .st-toggle-btn.enabled {
+            background: #27ae60;
+            color: white;
+            border-color: #2ecc71;
+            box-shadow: 0 0 8px rgba(39, 174, 96, 0.5);
+        }
+
+        .st-toggle-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .demo-card-header {
+            padding: 4px 8px !important;
+        }
+
+        .c-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 80px;
+        }
+
+        /* Live page charts: 2×2 grid — row1: S1, S2 — row2: S3, S4 */
+        .demo-chart-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            grid-template-rows: auto auto !important;
+            gap: 12px !important;
+        }
+
+        .demo-chart-box .chart-wrap {
+            height: 220px;
+        }
+
+        /* In-Active station: no enable control; HMI slot forced to 0 from server */
+        .demo-gauge-card.station-slot-inactive {
+            opacity: 0.82;
+        }
+        .demo-gauge-card.station-slot-inactive .demo-gauge-wrap {
+            pointer-events: none;
+        }
+        .station-toggle-unavailable .st-toggle-btn {
+            pointer-events: none;
+            opacity: 0.45;
+        }
+    </style>
+</head>
+
+<body class="demo-page-body">
+
+    <!-- ══════════════════════════════════════════════
+     1. TOP HEADER (Home + Feature Buttons)
+══════════════════════════════════════════════ -->
+    <header class="demo-top-header">
+        <a href="/" class="home-link" id="homeButton">&#8962; Home</a>
+
+        <div class="header-btn-row">
+            <span id="test_count_badge" style="display:none; font-weight:900; font-size:10px; color:#fff; background:#444; border:1px solid #777; border-radius:4px; padding:2px 8px; line-height:1.2;"></span>
+            <button class="reset-btn" style="display: none;" onclick="reset_all()">Reset</button>
+            <button class="cycle-btn" onclick="cycle_complete()">Cycle Complete</button>
+        </div>
+
+
+    </header>
+
+    <!-- ══════════════════════════════════════════════
+     2. INFO BAR (Logos + Information Grid)
+══════════════════════════════════════════════ -->
+    <section class="demo-info-bar">
+        <div class="logo-section-left">
+            <div class="company-name">
+                <span class="name-en"><img src="{% static 'images/lnt-logo.png' %}" alt="Uniflow Logo"
+                        style="height: 40px;"></span>
+            </div>
+        </div>
+
+        <div class="info-wrapper">
+            <div class="info-grid-container">
+                <!-- Row 1 -->
+                <div class="info-field">
+                    <span class="info-label">Valve Size</span>
+                    <span class="info-value" id="valve_size"></span>
+                </div>
+                <div class="info-field">
+                    <span class="info-label">Valve Class</span>
+                    <span class="info-value" id="valve_class"></span>
+                </div>
+                <div class="info-field">
+                    <span class="info-label">Valve Type</span>
+                    <span class="info-value" id="valve_type"></span>
+                </div>
+                <!-- Row 2 -->
+                <div class="info-field">
+                    <span class="info-label">Shell Material</span>
+                    <span class="info-value" id="shell_material"></span>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="info-field">
+                    <span class="info-label">Test Name</span>
+                    <span class="info-value" id="test_name"></span>
+                </div>
+                <div class="info-field">
+                    <span class="info-label">Tested By</span>
+                    <span class="info-value" id="tested_by"></span>
+                </div>
+                <div class="info-field">
+                    <span class="info-label">Date</span>
+                    <span class="info-value" id="date"></span>
+                </div>
+                <div class="info-field">
+                    <span class="info-label">Machine Mode</span>
+                    <span class="info-value" id="machine_mode"></span>
+                </div>
+
+            </div>
+
+            <div class="values-grid-container">
+                <!-- Moved from Values Bar -->
+                <div class="info-field" style="background-color:#c2c0c0;">
+                    <span class="info-label">Set
+                        Time</span>
+                    <span class="info-value" style="font-size:14px;" id="set_time"></span>
+                </div>
+                <div class="info-field" style="background-color: #c2c0c0;">
+                    <span class="info-label">Actual Time</span>
+                    <span class="info-value" style="font-size:14px;" id="actual_time">0</span>
+                </div>
+                <div class="info-field" style="background-color: #c2c0c0;">
+                    <span class="info-label">Set Pressure</span>
+                    <span class="info-value" style="font-size:14px;" id="set_pressure"></span>
+                </div>
+                <div class="info-field" style="background-color: #c2c0c0;">
+                    <span class="info-label">Pressure Unit</span>
+                    <span class="info-value" style="font-size:14px;" id="pressure_unit"></span>
+                </div>
+                <div class="info-field" style="background-color: #c2c0c0; display: none;">
+                    <span class="info-label">Test Medium</span>
+                    <span class="info-value" style="font-size:14px;" id="test_medium"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="logo-section-right">
+            <!-- Using a placeholder for the Teslead Logo as per instructions -->
+            <img src="{% static 'images/TESLEAD LOGO.png' %}" alt="teslead logo"
+                style="height: 50px; width: auto; max-width: 100%; object-fit: contain;">
+            <!-- <div style="font-weight:900; color:#1a237e; font-size:18px; letter-spacing:-1px;">TESLEAD</div> -->
+        </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+     4. MAIN PANEL (Gauges + Graphs)
+══════════════════════════════════════════════ -->
+    <main class="demo-main">
+
+        <div class="demo-dashboard-panel">
+            <div class="demo-gauge-row">
+                <!-- Station 1 -->
+                <div class="demo-gauge-card">
+                    <div class="demo-card-header">
+                        <span class="c-title">Station 1</span>
+                        <span class="c-sn" id="SN_1">SN : </span>
+                        <span class="c-status" id="status_1"></span>
+                    </div>
+                    <div class="demo-card-header" id="toggle_container_1">
+                        <button class="st-toggle-btn active m-0" id="st_toggle_1" onclick="toggleStation(1)">✘
+                            Enabled</button>
+                    </div>
+
+                    <div class="demo-gauge-wrap">
+                        <canvas id="gaugeCanvas1"></canvas>
+                    </div>
+                    <div class="demo-card-footer">
+                        <div class="f-item">
+                            <span class="f-label" id="pressure-label-s1">Result Pressure</span>
+                            <span class="f-value" id="result_pressure_s1">0.0</span>
+                        </div>
+                        <div class="f-item">
+                            <span class="f-label">Valve Status</span>
+                            <span class="f-value" id="valve_status_s1">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Station 2 -->
+                <div class="demo-gauge-card">
+                    <div class="demo-card-header">
+                        <span class="c-title">Station 2</span>
+                        <span class="c-sn" id="SN_2">SN : </span>
+                        <span class="c-status" id="status_2"></span>
+                    </div>
+                    <div class="demo-card-header" id="toggle_container_2">
+                        <button class="st-toggle-btn active m-0" id="st_toggle_2" onclick="toggleStation(2)">✘
+                            Enabled</button>
+                    </div>
+                    <div class="demo-gauge-wrap">
+                        <canvas id="gaugeCanvas2"></canvas>
+                    </div>
+                    <div class="demo-card-footer">
+                        <div class="f-item">
+                            <span class="f-label" id="pressure-label-s2">Result Pressure</span>
+                            <span class="f-value" id="result_pressure_s2">0.0</span>
+                        </div>
+                        <div class="f-item">
+                            <span class="f-label">Valve Status</span>
+                            <span class="f-value" id="valve_status_s2">N/A</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+         5. GRAPH PANEL
+    ══════════════════════════════════════════════ -->
+        <section class="demo-graph-section">
+            <!-- <div class="section-divider">ACTUAL PRESSURE GRAPH — ALL STATIONS</div> -->
+            <div class="demo-chart-grid">
+                <div class="demo-chart-box" id="chart_box_1">
+                    <div class="chart-title">ACTUAL PRESSURE GRAPH OF STATION - 1</div>
+                    <div class="chart-wrap"><canvas id="myChart1"></canvas></div>
+                </div>
+                <div class="demo-chart-box" id="chart_box_2">
+                    <div class="chart-title">ACTUAL PRESSURE GRAPH OF STATION - 2</div>
+                    <div class="chart-wrap"><canvas id="myChart2"></canvas></div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- <script src="{% static 'scripts/demo.js' %}"></script> -->
+
+    <script>
+        window.gaugeRange = null;
+        window.currentActiveTestId = null;
+        // When set, gauge scaling should never go below this value (prevents polling from overriding set_pressure*2)
+        window.lockedGaugeMax = null;
+
+        // Gauge configuration template
+        function createGaugeConfig(canvasId) {
+            const redColor = "red";
+            const greenColor = "#27ae60";
+            const highlights = [
+                {
+                    from: 0,
+                    to: 20,
+                    color: redColor // First 20% red
+                },
+                {
+                    from: 20,
+                    to: 80,
+                    color: greenColor // Middle 60% green
+                },
+                {
+                    from: 80,
+                    to: 100,
+                    color: redColor // Last 20% red (same as first)
+                }
+            ];
+
+            return {
+                renderTo: canvasId,
+
+                width: (canvasId === 'gaugeCanvas1' || canvasId === 'gaugeCanvas2') ? 200 : 300,
+                height: (canvasId === 'gaugeCanvas1' || canvasId === 'gaugeCanvas2') ? 200 : 300,
+                units: "",
+                title: "Actual",
+                minValue: 0,
+                maxValue: 100,
+                majorTicks: ["0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"],
+                minorTicks: 2,
+                strokeTicks: true,
+                highlights: highlights,
+
+                //colorPlate: "#fff",
+                colorPlate: "white",
+                colorMajorTicks: "#333",
+                colorMinorTicks: "#666",
+                colorNeedle: "black",       // Needle color
+                colorNeedleEnd: "#0066cc",    // Same for smooth gradient
+                colorUnits: "black",           // Units text color
+                colorNumbers: "black",
+                borderShadowWidth: 0,
+                //borders: false,
+                borders: true,
+                borderOuterWidth: 4,
+                borderMiddleWidth: 0,
+                borderInnerWidth: 0,
+                borderShadowWidth: 0,
+                colorBorderOuter: "#87ceeb",
+                colorBorderOuterEnd: "#87ceeb",
+                valueBox: true,
+                colorValueBoxRect: "transparent",
+                colorValueBoxRectEnd: "transparent",
+                colorValueBoxBackground: "transparent",
+                valueInt: 1,
+                valueDec: 2,
+                needleType: "arrow",
+                needleWidth: 2,
+                needleCircleSize: 7,
+                needleCircleOuter: true,
+                needleCircleInner: false,
+                animationDuration: 500,
+                animationRule: "linear",
+                value: 0
+            };
+        }
+
+
+        // Initialize all gauges and charts when page loads
+        window.onload = function () {
+            if (typeof RadialGauge === 'undefined') {
+                console.error('RadialGauge library failed to load.');
+                return;
+            }
+
+            // Initialize gauges array if not already
+            window.pressureGauges = [];
+
+            // Create 2 gauges: Actual Pressure (canvas1) & Set Pressure (canvas2)
+            // Create 3 gauges: Actual Pressure (canvas1), Actual Pressure (canvas2) & Set Pressure (canvasSet)
+            const gaugeIds = ['gaugeCanvas1', 'gaugeCanvas2'];
+            const gaugeTitles = ['Actual Pressure', 'Actual Pressure'];
+
+
+            gaugeIds.forEach((id, index) => {
+                const cfg = createGaugeConfig(id);
+
+                cfg.title = gaugeTitles[index];
+                const gauge = new RadialGauge(cfg).draw();
+                window.pressureGauges.push(gauge);
+
+
+            });
+
+            // Start chart updates AFTER gauges are initialized
+            startChartUpdates();
+            get_station_status();
+        };
+
+        // Create individual pressure chart
+
+        // Cache to persist latest PASS/FAIL per station across polls
+        window.lastResultsByStation = {};
+        // When true, do not render results until next OFF event
+        window.hideResultsUntilOff = false;
+
+
+        // Function to generate major ticks
+        function generateMajorTicks(maxValue) {
+            const ticks = [];
+            const interval = maxValue / 10;
+            for (let i = 0; i <= 10; i++) {
+                ticks.push(String(Math.round(i * interval)));
+            }
+            return ticks;
+        }
+        function updateGaugeScale(gaugeIndex, value) {
+            // Safety check: ensure gauge exists before accessing
+            if (!Array.isArray(window.pressureGauges) || !window.pressureGauges[gaugeIndex]) {
+                console.warn(`Gauge ${gaugeIndex} not initialized yet, skipping scale update`);
+                return;
+            }
+
+            const gauge = window.pressureGauges[gaugeIndex];
+            const currentMax = gauge.options.maxValue;
+
+            if (!Number.isFinite(value)) return;
+
+            let targetMax = gaugescale(value);
+            // If we previously applied set-pressure scaling, don't let polling reduce the max back to 0–100
+            if (Number.isFinite(window.lockedGaugeMax) && window.lockedGaugeMax > 0) {
+                targetMax = Math.max(targetMax, window.lockedGaugeMax, Number(currentMax) || 0);
+            }
+
+            const meaningfulChange = !Number.isFinite(currentMax) || Math.abs(targetMax - currentMax) / (currentMax || 1) > 0.05;
+            if (!meaningfulChange) return;
+
+            const redColor = "red";
+            const greenColor = "#27ae60";
+            const highlights = [
+                {
+                    from: 0,
+                    to: targetMax * 0.2,
+                    color: redColor
+                },
+                {
+                    from: targetMax * 0.2,
+                    to: targetMax * 0.8,
+                    color: greenColor
+                },
+                {
+                    from: targetMax * 0.8,
+                    to: targetMax,
+                    color: redColor
+                }
+            ];
+
+            gauge.update({
+                maxValue: targetMax,
+                majorTicks: generateMajorTicks(targetMax),
+                highlights: highlights
+            });
+        }
+
+        // Function to check timer status and draw vertical lines
+        function checkAndDrawVerticalLines(chart, timerStatusData, timeData, chartNumber, testId, pressureData) {
+            if (!timerStatusData || timerStatusData.length === 0) {
+                return;
+            }
+
+            // Initialize tracking for this test if needed
+            if (!testId || !testLinesAdded[testId]) {
+                if (testId) {
+                    testLinesAdded[testId] = {
+                        green1: false, red1: false,
+                        green2: false, red2: false
+                    };
+                } else {
+                    return; // Don't draw lines if no test ID
+                }
+            }
+
+            const lines = testLinesAdded[testId];
+            const greenKey = 'green' + chartNumber;
+            const redKey = 'red' + chartNumber;
+
+            // Find FIRST occurrence of status = 1 (green line) - only add once per test
+            if (!lines[greenKey]) {
+                const firstOneIndex = timerStatusData.findIndex(status => Number(status) === 1);
+                if (firstOneIndex !== -1) {
+                    console.log(`GREEN LINE for test ${testId}, chart ${chartNumber} at index ${firstOneIndex}, time: ${timeData[firstOneIndex]}`);
+                    addVerticalLine(chart, timeData[firstOneIndex], 'green');
+                    lines[greenKey] = true;
+                    window.isTestRunning = true;
+                    disable_all_buttons();
+                    update_pressure_analysis_table('on', chartNumber, testId, pressureData[firstOneIndex], timeData[firstOneIndex]);
+                }
+            }
+
+            // Find FIRST occurrence of status = 0 AFTER a 1 (red line) - only add once per test
+            if (lines[greenKey] && !lines[redKey]) {
+                const firstOneIndex = timerStatusData.findIndex(status => Number(status) === 1);
+                if (firstOneIndex !== -1) {
+                    const firstZeroAfterOne = timerStatusData.slice(firstOneIndex + 1).findIndex(status => Number(status) === 0);
+                    if (firstZeroAfterOne !== -1) {
+                        const actualIndex = firstOneIndex + 1 + firstZeroAfterOne;
+                        console.log(`RED LINE for test ${testId}, chart ${chartNumber} at index ${actualIndex}, time: ${timeData[actualIndex]}`);
+                        addVerticalLine(chart, timeData[actualIndex], 'red');
+                        lines[redKey] = true;
+                        window.isTestRunning = false;
+                        enable_all_buttons();
+                        update_pressure_analysis_table('off', chartNumber, testId, pressureData[actualIndex], timeData[actualIndex]);
+
+                        let completedTests = JSON.parse(localStorage.getItem('completed_tests') || '[]');
+                        if (!completedTests.includes(testId)) {
+                            completedTests.push(testId);
+                            localStorage.setItem('completed_tests', JSON.stringify(completedTests));
+                        }
+                        document.querySelectorAll(`button[data-test-id='${testId}']`).forEach(btn => {
+                            btn.classList.add("completed-test");
+                            btn.classList.remove("active-test"); // clear orange if it was active
+                        });
+                    }
+                }
+            }
+        }
+
+
+        // update Pressure analysis table after timer on and  timer off //
+
+        function update_pressure_analysis_table(status, chartNumber, testId, pressureData, timeData) {
+            fetch('/api/livepage/update_pressure_analysis/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    testId: testId,
+                    pressure_data: pressureData,
+                    time_data: timeData,
+                    chart: chartNumber,
+                    status: status
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const sid = Number(chartNumber);
+                        const st = data[`S${sid}_result_status`];
+                        const pr = data[`S${sid}_result_pressure`];
+                        if (st) {
+                            const statusEl = document.getElementById(`valve_status_s${sid}`);
+                            const pressureEl = document.getElementById(`result_pressure_s${sid}`);
+                            if (statusEl) {
+                                const stLower = (st || "").toLowerCase();
+                                statusEl.style.color = (stLower === "pass") ? "green" : (stLower === "running" ? "yellow" : "red");
+                                statusEl.innerHTML = st;
+                            }
+                            if (pressureEl && pr !== undefined && pr !== null) {
+                                const disp = (pressure_unit === 'PSI') ? Number(pr).toFixed(0) : pr;
+                                pressureEl.innerHTML = disp;
+                            }
+                        }
+                    }
+                })
+        }
+
+
+        function updateCharts() {
+            fetch('/api/livepage/get_pressure_data/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.getElementById('actual_time').innerText = data.Actual_time || 0;
+                        if (currentActiveTestId !== data.test_id) {
+                            currentActiveTestId = data.test_id;
+                            clearChartAnnotations();
+                            testLinesAdded[data.test_id] = null;
+                        }
+
+                        const bundles = [
+                            { chart: chart1, timeKey: 'timeData1', pressureKey: 'pressureData1', timerKey: 'timerStatus1', stationNum: 1, gaugeIndex: 0 },
+                            { chart: chart2, timeKey: 'timeData2', pressureKey: 'pressureData2', timerKey: 'timerStatus2', stationNum: 2, gaugeIndex: 1 }
+                        ];
+
+                        bundles.forEach(({ chart, timeKey, pressureKey, timerKey, stationNum, gaugeIndex }) => {
+                            const tData = data[timeKey] || [];
+                            const pData = data[pressureKey] || [];
+                            const timerSt = data[timerKey] || [];
+                            chart.data.labels = tData;
+                            chart.data.datasets[0].data = pData;
+                            checkAndDrawVerticalLines(chart, timerSt, tData, stationNum, data.test_id, pData);
+                            chart.update('none');
+                            if (pData.length > 0) {
+                                updateGaugeValue(gaugeIndex, pData[pData.length - 1]);
+                            }
+                            const valveStatus = data[`s${stationNum}_valvestatus`];
+                            const statusEl = document.getElementById(`valve_status_s${stationNum}`);
+                            if (statusEl) {
+                                if (valveStatus) {
+                                    statusEl.innerHTML = valveStatus;
+                                    const st = valveStatus.toLowerCase();
+                                    statusEl.style.color = (st === 'pass') ? 'green' : (st === 'running' ? 'yellow' : 'red');
+                                } else {
+                                    statusEl.innerHTML = 'N/A';
+                                    statusEl.style.color = '';
+                                }
+                            }
+                        });
+                    }
+                })
+                .catch(err => console.error("Error fetching chart data:", err));
+        }
+        
+
+        // Update Enable/Disable toggle button state
+        function get_station_status(){
+            fetch('/api/livepage/get_station_status/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        for (let i = 1; i <= 2; i++) {
+                            const toggleWrap = document.getElementById('toggle_container_' + i);
+                            if (toggleWrap && toggleWrap.classList.contains('station-toggle-unavailable')) {
+                                const toggleBtn = document.getElementById(`st_toggle_${i}`);
+                                if (toggleBtn) {
+                                    toggleBtn.classList.remove('enabled');
+                                    toggleBtn.textContent = '✘ Disabled';
+                                    toggleBtn.disabled = true;
+                                }
+                                continue;
+                            }
+                            const enValue = data[`s${i}_status`];
+                            const toggleBtn = document.getElementById(`st_toggle_${i}`);
+                            if (toggleBtn) {
+                                toggleBtn.disabled = false;
+                                if (enValue === 1) {
+                                    toggleBtn.classList.add('enabled');
+                                    toggleBtn.textContent = '✓ Enabled';
+                                } else {
+                                    toggleBtn.classList.remove('enabled');
+                                    toggleBtn.textContent = '✘ Disabled';
+                                }
+                            }
+                        }
+                    }
+                })
+                .catch(err => console.error("Error fetching station status:", err));
+        }
+
+        // Initialize and start updating
+        window.chartUpdateInterval = null;
+        window.pauseChartUpdates = false;
+
+        function startChartUpdates() {
+            if (window.chartUpdateInterval) {
+                clearInterval(window.chartUpdateInterval);
+            }
+            updateCharts();
+            window.chartUpdateInterval = setInterval(() => {
+                if (!window.pauseChartUpdates) {
+                    updateCharts();
+                }
+            }, 1000);
+        }
+
+        function addVerticalLine(chart, timeValue, color) {
+            if (!chart.options.plugins) {
+                chart.options.plugins = {};
+            }
+            if (!chart.options.plugins.annotation) {
+                chart.options.plugins.annotation = { annotations: {} };
+            }
+
+            // Create unique ID for this line
+            const lineId = `line_${color}_${timeValue}_${Date.now()}`;
+            const labelText = color === 'green' ? 'Time on' : (color === 'red' ? 'Time off' : '');
+
+            chart.options.plugins.annotation.annotations[lineId] = {
+                type: 'line',
+                xMin: timeValue,
+                xMax: timeValue,
+                borderColor: color,
+                borderWidth: 2,
+                label: {
+                    display: true,
+                    content: labelText,
+                    position: 'center',
+                    backgroundColor: color,
+                    color: 'white',
+                    font: {
+                        size: 12,
+                        weight: 'bold'
+                    },
+                    rotation: -90,
+                    padding: 4
+                }
+            };
+        }
+        // ----------------------------------------
+        var class_name;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            get_active_testbtn();
+            // Machine mode should default to Manual on this page.
+            // HMI-driven auto read is intentionally disabled (commented) so it won't override Manual.
+            set_machine_mode_manual_default();
+            // setInterval(get_machinemode, 2000); // <-- HMI polling disabled
+            get_size_class();
+            current_date();
+            startChartUpdates(); // Ensure polling starts immediately
+        });
+
+        function set_machine_mode_manual_default() {
+            const modeEl = document.getElementById('machine_mode');
+            if (modeEl) modeEl.innerHTML = 'Manual';
+
+            const resetBtn = document.querySelector('.reset-btn');
+            if (resetBtn) resetBtn.style.display = 'none';
+
+            if (!window.isTestRunning) {
+                enable_all_buttons();
+            }
+        }
+
+        function get_machinemode() {
+            fetch('/api/livepage/get_machine_mode/')
+                .then(res => res.json())
+                .then(data => {
+                    // Always update the display (shows 'Unknown' if HMI not connected)
+                    const mode = data.machine_mode || 'Unknown';
+                    document.getElementById('machine_mode').innerHTML = mode;
+
+                    if (data.status === 'success') {
+                        const resetBtn = document.querySelector('.reset-btn');
+                        if (mode == 'Auto') {
+                            disable_all_buttons()
+                            auto_mode()
+                            if (resetBtn) resetBtn.style.display = 'block';
+                        }
+                        else {
+                            if (!window.isTestRunning) {
+                                enable_all_buttons()
+                            }
+
+                            if (resetBtn) resetBtn.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('machine_mode').innerHTML = 'Unknown';
+                });
+        }
+
+
+        function auto_mode() {
+            fetch('/api/livepage/get_automode_response/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'waiting') {
+                        return; // No cycle started yet, this is normal
+                    }
+                    if (data.status !== 'success') {
+                        console.warn('Failed to fetch automode response:', data.error || data.message);
+                        return;
+                    }
+                    const test_type = data.Test_type;
+                    const valve_ser_no = data.valve_ser_no;
+                    Automode_click(test_type, valve_ser_no)
+                })
+        }
+
+        function Automode_click(test_type, valve_ser_no) {
+            get_pressure_dur(test_type, valve_ser_no);
+            let testName = "";
+            const btn = document.querySelector(`button[data-test-id="${test_type}"]`);
+            if (btn) {
+                testName = btn.textContent;
+            }
+            set_activebtn_orange(test_type, testName);
+        }
+
+        function get_active_testbtn() {
+            fetch('/api/livepage/get_active_testbtn/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        console.warn('Failed to fetch active button data');
+                        return;
+                    }
+                    const rightContainer = document.querySelector('.header-btn-row');
+                    const cycleButton = rightContainer.lastElementChild;
+                    const resetButton = rightContainer.firstElementChild;
+                    resetButton.style.display = 'none';
+                    resetButton.style.fontSize = '10px';
+                    resetButton.classList.add('reset-btn');
+                    rightContainer.innerHTML = '';
+
+                    // Show how many tests are coming from DB
+                    const badge = document.getElementById('test_count_badge');
+                    if (badge) {
+                        const c = Number(data.test_count);
+                        if (Number.isFinite(c) && c > 0) {
+                            badge.textContent = `Tests: ${c}`;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+
+                    const savedTestId = localStorage.getItem('current_test_id');
+
+                    data.test_buttons.forEach(test => {
+                        const button = document.createElement('button');
+                        button.textContent = test.test_btn;
+                        button.style.fontSize = '10px';
+                        button.classList.add('h-btn');
+                        button.setAttribute('data-test-id', test.test_id);
+
+                        let completedTests = JSON.parse(localStorage.getItem('completed_tests') || '[]');
+
+                        // If test is completed, apply completed-test class instead of active-test
+                        if (completedTests.includes(test.test_id)) {
+                            button.classList.add('completed-test');
+                            if (savedTestId && savedTestId == test.test_id) {
+                                const testTitleEl = document.getElementById("test_name");
+                                if (testTitleEl) testTitleEl.innerText = test.test_btn;
+                                get_pressure_dur(test.test_id, test.valve_ser_no);
+                            }
+                        } else if (savedTestId && savedTestId == test.test_id) {
+                            button.classList.add('active-test');
+                            const testTitleEl = document.getElementById("test_name");
+                            if (testTitleEl) {
+                                testTitleEl.innerText = test.test_btn;
+                            }
+                            get_pressure_dur(test.test_id, test.valve_ser_no);
+                        }
+
+                        button.onclick = () => handleTestClickNew(test.test_id, test.test_btn, test.valve_ser_no);
+
+                        rightContainer.appendChild(button);
+
+                    });
+                    rightContainer.appendChild(cycleButton);
+                    rightContainer.appendChild(resetButton);
+
+                    // Call machine mode AFTER buttons are created so .reset-btn exists
+                    // get_machinemode(); // <-- HMI read disabled; page stays in Manual by default
+                    if (window.isTestRunning) {
+                        disable_all_buttons()
+                    }
+                })
+        }
+
+        let pressure_unit;
+        let valve_ser_no;
+        let valve_class;
+
+        function get_size_class() {
+            fetch('/api/livepage/get_size_class/')
+                .then(response => response.json())
+                .then(data => {
+                    const rows = (data.status === 'success' && Array.isArray(data.data)) ? data.data : [];
+
+                    if (rows.length > 0) {
+                        document.getElementById('valve_size').textContent = rows[0].size_name;
+                        document.getElementById('valve_class').textContent = rows[0].class_name;
+                        document.getElementById('valve_type').textContent = rows[0].type_name;
+                        document.getElementById('shell_material').textContent = rows[0].shell_material_name;
+                        document.getElementById('tested_by').textContent = rows[0].tested_by;
+                        document.getElementById('pressure_unit').textContent = rows[0].pressure_unit;
+
+                        pressure_unit = rows[0].pressure_unit;
+
+                        [chart1, chart2].forEach(function (ch) {
+                            if (ch) {
+                                ch.options.scales.y.title.text = `Pressure (${pressure_unit})`;
+                                ch.update('none');
+                            }
+                        });
+
+                        if (window.pressureGauges) {
+                            const precision = (pressure_unit === 'PSI') ? 0 : 2;
+                            window.pressureGauges.forEach(gauge => {
+                                gauge.update({
+                                    units: pressure_unit,
+                                    valueDec: precision
+                                });
+                            });
+                        }
+
+                        for (let si = 1; si <= 2; si++) {
+                            const lbl = document.getElementById(`pressure-label-s${si}`);
+                            if (lbl) lbl.textContent = `Result Pressure (${pressure_unit})`;
+                        }
+
+                        if (window.refreshGauges) window.refreshGauges();
+                    }
+
+                    // All slots start In-Active; server already wrote HMI Sx_STATUS=0 for slots with no Enabled row
+                    for (let i = 1; i <= 2; i++) {
+                        const status_element = document.getElementById('status_' + i);
+                        if (status_element) {
+                            status_element.textContent = "In-Active";
+                            status_element.style.color = "red";
+                        }
+                        const snEl = document.getElementById('SN_' + i);
+                        if (snEl) snEl.textContent = "SN : ";
+
+                        const toggle_container = document.getElementById('toggle_container_' + i);
+                        if (toggle_container) {
+                            toggle_container.style.visibility = 'hidden';
+                            toggle_container.classList.add('station-toggle-unavailable');
+                        }
+                        const gaugeCard = toggle_container && toggle_container.closest('.demo-gauge-card');
+                        if (gaugeCard) gaugeCard.classList.add('station-slot-inactive');
+
+                        const btn = document.getElementById('st_toggle_' + i);
+                        if (btn) {
+                            btn.disabled = true;
+                            btn.classList.remove('enabled');
+                            btn.textContent = '✘ Disabled';
+                        }
+                    }
+
+                    rows.forEach(item => {
+                        const stationId = item.id;
+                        const serialNo = item.valve_ser_no;
+
+                        const element = document.getElementById('SN_' + stationId);
+                        if (element) element.textContent = "SN : " + serialNo;
+
+                        const status_element = document.getElementById('status_' + stationId);
+                        if (status_element) {
+                            status_element.textContent = "Active";
+                            status_element.style.color = "green";
+                        }
+
+                        const toggle_container = document.getElementById('toggle_container_' + stationId);
+                        if (toggle_container) {
+                            toggle_container.style.visibility = 'visible';
+                            toggle_container.classList.remove('station-toggle-unavailable');
+                        }
+                        const tc = document.getElementById('toggle_container_' + stationId);
+                        const gaugeCard = tc && tc.closest('.demo-gauge-card');
+                        if (gaugeCard) gaugeCard.classList.remove('station-slot-inactive');
+
+                        const btn = document.getElementById('st_toggle_' + stationId);
+                        if (btn) btn.disabled = false;
+                    });
+
+                    get_station_status();
+                })
+        }
+
+        let activeTestId = null;
+        let clickCount = 0;
+
+        function handleTestClickNew(testId, testName, valve_ser_no) {
+
+            // If switching to different test
+            if (activeTestId !== testId) {
+                activeTestId = testId;
+                clickCount = 0;  // reset count when switching
+            }
+
+            clickCount++;
+
+            console.log("Active Test:", activeTestId, "Clicks:", clickCount);
+
+            // Second click
+            if (clickCount === 2) {
+                let confirmReset = confirm("Test already running. Do you want to reset?");
+
+                if (confirmReset) {
+                    reset_test(testId, valve_ser_no)
+
+                }
+
+                // After reset popup, set back to 1
+                clickCount = 1;
+            }
+            if (window.resumeCharts) window.resumeCharts();  // re-enable polling for new test
+
+            // Clear valve status and result pressure from previous test
+            for (let i = 1; i <= 2; i++) {
+                const statusEl = document.getElementById(`valve_status_s${i}`);
+                const pressureEl = document.getElementById(`result_pressure_s${i}`);
+                if (statusEl) { statusEl.innerHTML = 'N/A'; statusEl.style.color = ''; }
+                if (pressureEl) { pressureEl.innerHTML = '0.0'; }
+            }
+
+            get_pressure_dur(testId, valve_ser_no);
+            set_activebtn_orange(testId, testName);
+        }
+
+        // Function to update specific gauge value
+        function updateGaugeValue(gaugeIndex, newValue) {
+            // Safety check: ensure gauges are initialized
+            if (!Array.isArray(window.pressureGauges) ||
+                !window.pressureGauges[gaugeIndex] ||
+                window.pressureGauges.length === 0) {
+                console.warn(`Gauge ${gaugeIndex} not initialized yet, skipping update`);
+                return;
+            }
+
+            const g = window.pressureGauges[gaugeIndex];
+            if (!g) return;
+            const v = Number(newValue);
+            if (!Number.isFinite(v)) return;
+
+            updateGaugeScale(gaugeIndex, v);
+
+            g.value = v;
+            g.draw();
+        }
+
+        function get_pressure_dur(testId, valve_ser_no) {
+            fetch(`/api/livepage/get_pressure_duration/${testId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify({ serial_numbers: valve_ser_no })
+            })
+                .then(response => response.json())
+                .then(data => {
+
+                    if (data.status !== 'success') {
+                        console.warn('Failed to fetch pressure duration data');
+                        return;
+                    }
+                    const pressure = data.pressure;
+                    const duration = data.duration;
+                    const class_name = data.class_name;
+                    const test_medium = data.test_medium;
+                    document.getElementById("set_pressure").innerText = pressure;
+                    document.getElementById("test_medium").innerText = test_medium;
+                    document.getElementById("set_time").innerText = duration;
+                    applyGaugeScaleFromSetPressure();
+                    start_collecting_pressure();
+                })
+        }
+
+        function applyGaugeScaleFromSetPressure() {
+            if (!Array.isArray(window.pressureGauges) || window.pressureGauges.length === 0) return;
+
+            const spText = document.getElementById('set_pressure')?.textContent || '';
+            const sp = Number(spText);
+            if (!Number.isFinite(sp) || sp <= 0) return;
+
+            const targetMax = Math.max(10, sp * 2);
+            window.lockedGaugeMax = targetMax;
+            const redColor = "red";
+            const greenColor = "#27ae60";
+            const highlights = [
+                { from: 0, to: targetMax * 0.2, color: redColor },
+                { from: targetMax * 0.2, to: targetMax * 0.8, color: greenColor },
+                { from: targetMax * 0.8, to: targetMax, color: redColor }
+            ];
+
+            window.pressureGauges.forEach(g => {
+                if (!g) return;
+                g.update({
+                    maxValue: targetMax,
+                    majorTicks: generateMajorTicks(targetMax),
+                    highlights: highlights
+                });
+                g.draw();
+            });
+        }
+
+        function start_collecting_pressure() {
+            fetch('/api/livepage/start_test_thread/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        console.warn('Failed to start pressure collection thread');
+                        return;
+                    }
+                    console.log('Pressure collection started');
+                }).catch(err => console.error("Error starting thread:", err));
+        }
+
+        let testLinesAdded = {};  // { test_id: { green1: false, red1: false, green2: false, red2: false } }
+        let currentActiveTestId = null;
+
+        // Function to clear chart annotations when switching tests
+        function clearChartAnnotations() {
+            if (chart1.options.plugins && chart1.options.plugins.annotation) {
+                chart1.options.plugins.annotation.annotations = {};
+                chart1.update();
+            }
+            if (chart2.options.plugins && chart2.options.plugins.annotation) {
+                chart2.options.plugins.annotation.annotations = {};
+                chart2.update();
+            }
+            // Reset line tracking so lines can be redrawn for the next test run
+            testLinesAdded = {};
+            window.isTestRunning = false;
+            console.log('Cleared all chart annotations and line tracking');
+        }
+
+        function set_activebtn_orange(testId, testName) {
+            document.querySelectorAll("button[data-test-id]")
+                .forEach(btn => btn.classList.remove("active-test"));
+
+            const testTitleEl = document.getElementById("test_name");
+            if (testTitleEl) testTitleEl.innerText = testName;
+
+            const clickedButton = document.querySelector(`button[data-test-id="${testId}"]`);
+            if (clickedButton) {
+                let completedTests = JSON.parse(localStorage.getItem('completed_tests') || '[]');
+                if (!completedTests.includes(testId)) {
+                    clickedButton.classList.add("active-test");
+                }
+                localStorage.setItem('current_test_id', testId);
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function stop_collecting_pressure() {
+            var cycle_complete = document.getElementsByClassName('demo-page-body')[0];
+
+
+            fetch('/api/livepage/stop_test_thread/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        console.warn('Failed to stop pressure collection thread');
+                        Swal.fire({
+                            title: 'Pressure Not Drained',
+                            text: data.message || 'Please drain the pressure before completing the cycle.',
+                            icon: 'warning',
+                            confirmButtonText: 'OK'
+                        });
+                        return;
+                    }
+                    console.log('Pressure collection stopped');
+                    cycle_complete.style.opacity = '0.5';
+                    window.lockedGaugeMax = null;
+                    // Clear frontend state ONLY after backend DB is successfully truncated!
+                    if (window.clearAllCharts) window.clearAllCharts();  // wipe charts & gauges
+                    clearChartAnnotations();
+                    clear_localstorage();
+                    clickCount = 0;
+
+                    for (let i = 1; i <= 2; i++) {
+                        const statusEl = document.getElementById(`valve_status_s${i}`);
+                        const pressureEl = document.getElementById(`result_pressure_s${i}`);
+                        if (statusEl) { statusEl.innerHTML = 'N/A'; statusEl.style.color = ''; }
+                        if (pressureEl) { pressureEl.innerHTML = '0.0'; }
+                    }
+                }).catch(err => {
+                    cycle_complete.style.opacity = '1';
+                    console.error("Error stopping thread:", err);
+                });
+        }
+
+        function clear_localstorage() {
+            // Identify active stations from the UI before clearing
+            let activeStations = [];
+            for (let i = 1; i <= 2; i++) {
+                const statusEl = document.getElementById('status_' + i);
+                if (statusEl && statusEl.textContent.trim() === 'Active') {
+                    activeStations.push(i);
+                }
+            }
+
+            localStorage.removeItem('current_test_id');
+            localStorage.removeItem('completed_tests');
+            document.querySelectorAll("button[data-test-id]").forEach(btn => {
+                btn.classList.remove("active-test", "completed-test");
+            });
+
+            setTimeout(() => {
+                Swal.fire({
+                    title: 'Cycle Complete',
+                    text: 'Redirecting to Results Page...',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+
+                setTimeout(() => {
+                    const stationsParam = activeStations.join(',');
+                    window.location.href = "/cycle_complete/?stations=" + stationsParam;
+                }, 2000);
+
+            }, 1000);
+        }
+
+        function cycle_complete() {
+            // Show loading popup immediately
+            Swal.fire({
+                title: 'Cycle is Completing...',
+                text: 'Please wait. Do not perform any action.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            stop_collecting_pressure();
+        }
+
+        // Chart 1 Data
+        const timeData1 = [];
+        const pressureData1 = [];
+        const timerstatus1 = [];
+
+        // Chart 2 Data
+        const timeData2 = [];
+        const pressureData2 = [];
+        const timerstatus2 = [];
+
+        // Chart 1
+        const chart1 = new Chart(document.getElementById('myChart1'), {
+            type: 'line',
+            data: {
+                labels: timeData1,
+                datasets: [{
+                    label: 'Pressure - Test 1',
+                    data: pressureData1,
+                    borderColor: 'white',
+                    fill: false,
+                    tension: 0.3,
+                    // ✅ Remove pointer dots
+                    pointRadius: 0,
+                    pointHoverRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: 'white' }, title: { display: true, text: 'Time (sec)', color: 'white' } },
+                    y: { beginAtZero: true, ticks: { color: 'white' }, title: { display: true, text: 'Pressure', color: 'white' } }
+                }
+            }
+        });
+
+
+        // Chart 2
+        const chart2 = new Chart(document.getElementById('myChart2'), {
+            type: 'line',
+            data: {
+                labels: timeData2,
+                datasets: [{
+                    label: 'Pressure - Test 2',
+                    data: pressureData2,
+                    borderColor: 'white',
+                    fill: false,
+                    tension: 0.3,
+                    // ✅ Remove pointer dots
+                    pointRadius: 0,
+                    pointHoverRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: 'white' }, title: { display: true, text: 'Time (sec)', color: 'white' } },
+                    y: { beginAtZero: true, ticks: { color: 'white' }, title: { display: true, text: 'Pressure', color: 'white' } }
+                }
+            }
+        });
+
+
+        function disable_all_buttons() {
+            document.querySelectorAll("button[data-test-id]")
+                .forEach(btn => btn.disabled = true);
+            document.querySelectorAll("button[data-test-id]")
+                .forEach(btn => btn.style.opacity = 0.5);
+
+        }
+
+        function enable_all_buttons() {
+            document.querySelectorAll("button[data-test-id]")
+                .forEach(btn => btn.disabled = false);
+            document.querySelectorAll("button[data-test-id]")
+                .forEach(btn => btn.style.opacity = 1);
+        }
+
+        function reset_test(testId, valve_ser_no) {
+            // Pause chart updates immediately
+            window.pauseChartUpdates = true;
+
+            // Clear frontend immediately
+            window.lockedGaugeMax = null;
+            testLinesAdded = {};
+            currentActiveTestId = null;
+            window.currentActiveTestId = null;
+            clearChartAnnotations(); // Clear annotations immediately
+
+            // Clear all chart data
+            chart1.data.labels = [];
+            chart1.data.datasets[0].data = [];
+            chart1.update();
+
+            chart2.data.labels = [];
+            chart2.data.datasets[0].data = [];
+            chart2.update();
+
+            // Reset gauges to 0
+            for (let i = 0; i < 2; i++) {
+                updateGaugeValue(i, 0);
+            }
+
+            // Clear valve status displays and actual time
+            document.getElementById('actual_time').innerText = '0';
+            for (let i = 1; i <= 2; i++) {
+                const statusEl = document.getElementById(`valve_status_s${i}`);
+                const pressureEl = document.getElementById(`result_pressure_s${i}`);
+                if (statusEl) { statusEl.innerHTML = 'N/A'; statusEl.style.color = ''; }
+                if (pressureEl) { pressureEl.innerHTML = '0.0'; }
+            }
+
+            // Now call backend to clear database
+            fetch(`/api/livepage/reset_test/${testId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    testId: testId,
+                    valve_ser_no: valve_ser_no
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        console.warn('Failed to reset test');
+                        window.pauseChartUpdates = false; // Resume updates
+                        return;
+                    }
+
+                    let completed = JSON.parse(localStorage.getItem('completed_tests') || '[]');
+                    completed = completed.filter(id => id !== testId);
+                    localStorage.setItem('completed_tests', JSON.stringify(completed));
+                    document.querySelectorAll(`button[data-test-id='${testId}']`).forEach(btn => btn.classList.remove("completed-test"));
+                    document.querySelectorAll(`button[data-test-id='${testId}']`).forEach(btn => btn.classList.add("active-test"));
+                    console.log('Test reset successfully');
+
+                    // Wait a bit for backend to fully clear, then resume updates
+                    setTimeout(() => {
+                        window.pauseChartUpdates = false;
+                    }, 1500);
+
+                }).catch(err => {
+                    console.error("Error resetting test:", err);
+                    window.pauseChartUpdates = false; // Resume updates even on error
+                });
+        }
+
+        // Home button //
+
+
+        const homeButton = document.getElementById('homeButton');
+
+        if (homeButton) {
+            homeButton.onclick = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const modeElement = document.getElementById('machine_mode');
+                const currentMode = modeElement ? modeElement.textContent.trim() : '';
+
+                if (currentMode === 'Auto') {
+                    console.log(' Home navigation blocked in Auto mode');
+                    alert('Navigation is disabled in Auto mode. Please switch to Manual mode first.');
+                    return false;
+                }
+
+                console.log('Home button clicked - navigating to dashboard');
+
+                // Clear any ongoing timers
+                if (window.modalTimerId) {
+                    clearTimeout(window.modalTimerId);
+                    window.modalTimerId = null;
+                }
+
+                // Navigate to dashboard
+                window.location.href = '/dashboard';
+                return false;
+            };
+        }
+
+        // Update Home button appearance every 500ms
+        setInterval(updateHomeButtonState, 500);
+
+
+        // Function to update Home button visual state
+        function updateHomeButtonState() {
+            const homeButton = document.getElementById('homeButton');
+            const modeElement = document.getElementById('machine_mode');
+
+            if (!homeButton || !modeElement) return;
+
+            const currentMode = modeElement.textContent.trim();
+
+            if (currentMode === 'Auto') {
+                homeButton.style.opacity = '0.5';
+                homeButton.style.cursor = 'not-allowed';
+                homeButton.title = 'Navigation disabled in Auto mode';
+            } else {
+                homeButton.style.opacity = '1';
+                homeButton.style.cursor = 'pointer';
+                homeButton.title = 'Go to Home';
+            }
+        }
+
+        function reset_all() {
+            // Show confirmation dialog
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you really want to reset all tests? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Reset All',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                reverseButtons: true
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    return; // User clicked Cancel, stop here
+                }
+
+                // User confirmed, proceed with reset
+                // Pause chart updates immediately
+                window.pauseChartUpdates = true;
+
+                // Clear frontend immediately
+                testLinesAdded = {};
+                currentActiveTestId = null;
+                clearChartAnnotations();
+
+                // Clear all chart data
+                chart1.data.labels = [];
+                chart1.data.datasets[0].data = [];
+                chart1.update();
+
+                chart2.data.labels = [];
+                chart2.data.datasets[0].data = [];
+                chart2.update();
+
+                // Reset gauges to 0
+                for (let i = 0; i < 2; i++) {
+                    updateGaugeValue(i, 0);
+                }
+
+                // Clear valve status displays
+                for (let i = 1; i <= 2; i++) {
+                    const statusEl = document.getElementById(`valve_status_s${i}`);
+                    const pressureEl = document.getElementById(`result_pressure_s${i}`);
+                    if (statusEl) { statusEl.innerHTML = 'N/A'; statusEl.style.color = ''; }
+                    if (pressureEl) { pressureEl.innerHTML = '0.0'; }
+                }
+
+                // Clear actual time display
+                document.getElementById('actual_time').innerText = '';
+
+                // Stop pressure collection thread first
+                fetch('/api/livepage/stop_pressure_collection_only/')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Pressure collection stopped for reset');
+
+                        // Now call backend to clear database
+                        return fetch(`/api/livepage/reset_all/`);
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status !== 'success') {
+                            console.warn('Failed to reset test');
+                            Swal.fire({
+                                title: 'Reset Failed',
+                                text: 'Cycle is running. Cannot reset at this time.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                            window.pauseChartUpdates = false; // Resume updates
+                            return;
+                        }
+                        console.log('Test reset successfully');
+
+                        // Clear localStorage without triggering cycle complete
+                        localStorage.removeItem('current_test_id');
+                        localStorage.removeItem('completed_tests');
+                        document.querySelectorAll("button[data-test-id]").forEach(btn => {
+                            btn.classList.remove("active-test", "completed-test");
+                        });
+                        clickCount = 0;
+
+                        // Show success message without redirect
+                        Swal.fire({
+                            title: 'Reset Complete',
+                            text: 'All tests have been reset successfully.',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+
+                        // Wait a bit for backend to fully clear, then resume updates
+                        setTimeout(() => {
+                            window.pauseChartUpdates = false;
+                        }, 500);
+
+                    }).catch(err => {
+                        console.error("Error resetting test:", err);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'An error occurred while resetting. Please try again.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        window.pauseChartUpdates = false; // Resume updates even on error
+                    });
+            });
+        }
+
+        function gaugescale(actual_pressure = 0) {
+            var gaugeselection = 'ClassRating'
+            let GaugeScale = 1000; // Default fallback
+
+            if (gaugeselection == 'ClassRating') {
+                let valve_class = document.getElementById('valve_class').textContent;
+                let pressure_unit_text = document.getElementById('pressure_unit').textContent.toLowerCase();
+                let isAirTest = document.getElementById('test_medium').textContent.toLowerCase() === 'air';
+
+                // Determine gauge scale based on pressure unit and class rating
+                if (pressure_unit_text === 'bar' || pressure_unit_text === 'kg/cm2g') {
+                    if (valve_class === '150' || valve_class === '#150') {
+                        GaugeScale = 70;
+                    } else if (valve_class === '300' || valve_class === '#300') {
+                        GaugeScale = 200;
+                    } else if (valve_class === '600' || valve_class === '#600') {
+                        GaugeScale = 280;
+                    } else if (valve_class === '900' || valve_class === '#900') {
+                        GaugeScale = 400;
+                    } else if (valve_class === '1500' || valve_class === '#1500') {
+                        GaugeScale = 700;
+                    }
+
+                    if (isAirTest) GaugeScale = 17;
+                } else if (pressure_unit_text === 'psi') {
+                    if (valve_class === '150' || valve_class === '#150') {
+                        GaugeScale = 100;
+                    } else if (valve_class === '300' || valve_class === '#300') {
+                        GaugeScale = 3000;
+                    } else if (valve_class === '600' || valve_class === '#600') {
+                        GaugeScale = 4000;
+                    } else if (valve_class === '900' || valve_class === '#900') {
+                        GaugeScale = 6000;
+                    } else if (valve_class === '1500' || valve_class === '#1500') {
+                        GaugeScale = 10000;
+                    }
+
+                    if (isAirTest) GaugeScale = 250;
+                }
+            }
+
+            if (gaugeselection == 'Setpressure') {
+                let set_p_value = Number(document.getElementById('set_pressure').textContent) || 0;
+                GaugeScale = set_p_value * 2;
+            }
+
+            if (gaugeselection == 'Actualpressure') {
+                GaugeScale = actual_pressure * 2;
+            }
+
+            return GaugeScale || 100; // Safeguard
+        }
+
+        function current_date() {
+            let date = new Date();
+            let day = date.getDate();
+            let month = date.getMonth() + 1;
+            let year = date.getFullYear();
+            document.getElementById('date').textContent = `${day}-${month}-${year}`;
+        }
+
+        function toggleStation(stationId) {
+            const toggleWrap = document.getElementById('toggle_container_' + stationId);
+            if (!toggleWrap || toggleWrap.classList.contains('station-toggle-unavailable')) {
+                return;
+            }
+            const btn = document.getElementById(`st_toggle_${stationId}`);
+            if (!btn || btn.disabled) return;
+
+            const currentlyEnabled = btn.classList.contains('enabled');
+            const targetEnable = !currentlyEnabled;
+            const actionText = targetEnable ? 'Enable' : 'Disable';
+
+            Swal.fire({
+                title: 'Confirm Control?',
+                text: `Are you sure you want to ${actionText.toLowerCase()} Station ${stationId}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: targetEnable ? '#27ae60' : '#444',
+                cancelButtonColor: '#d33',
+                confirmButtonText: `Yes, ${actionText} Station`
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    btn.style.opacity = '0.5';
+                    btn.disabled = true;
+
+                    fetch('/api/livepage/toggle_station/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            station_id: stationId,
+                            enable: targetEnable ? 1 : 0
+                        })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            btn.style.opacity = '1';
+                            btn.disabled = false;
+                            if (data.status === 'success') {
+                                if (targetEnable) {
+                                    btn.classList.add('enabled');
+                                    btn.textContent = '✓ Enabled';
+                                } else {
+                                    btn.classList.remove('enabled');
+                                    btn.textContent = '✘ Disabled';
+                                }
+                                Swal.fire({
+                                    title: 'Status Updated',
+                                    text: `Station ${stationId} successfully ${actionText.toLowerCase()}d.`,
+                                    icon: 'success',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                get_station_status();
+                            } else {
+                                Swal.fire('Error', data.message || "Unknown error", 'error');
+                            }
+                        })
+                        .catch(err => {
+                            btn.style.opacity = '1';
+                            btn.disabled = false;
+                            Swal.fire('Error', 'Connection failed', 'error');
+                            console.error("Toggle error:", err);
+                            get_station_status();
+                        });
+                }
+            });
+        }
+
+    </script>
+</body>
+
+</html>
