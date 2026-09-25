@@ -1,0 +1,10 @@
+$cert = "C:\path\to\yourcert.pfx"
+$pass = "Teslead@1997"
+$tstamp = "http://timestamp.digicert.com"
+$signtool = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.28000.0\x64\signtool.exe"
+
+& $signtool sign /f $cert /p $pass /fd SHA256 /tr $tstamp /td SHA256 `
+  "D:\L-T_60MT_2Station\desktop\L-T_60MT_2STATION\src-tauri\target\release\l-t-60mt-2station.exe"
+
+& $signtool sign /f $cert /p $pass /fd SHA256 /tr $tstamp /td SHA256 `
+  "D:\L-T_60MT_2Station\desktop\L-T_60MT_2STATION\src-tauri\target\release\bundle\msi\l-t-60mt-2station_0.1.0_x64_en-US.msi"
